@@ -5,14 +5,27 @@ Vagrant.configure("2") do |config|
     config.vm.network "private_network", ip: "192.168.56.2"
 
     # connect internal \ external ports
-    config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+    config.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
+    config.vm.network "forwarded_port", guest: 8081, host: 8081, host_ip: "127.0.0.1"
 
     # share data
-    config.vm.synced_folder "../data", "/var/www/html"
+    config.vm.synced_folder "../page1", "/var/www/a.example.com"
+    config.vm.synced_folder "../page2", "/var/www/b.example.com"
+
+    config.vm.provision "file", source: "../data/a.example.com.conf", destination: "tmp/"
+    config.vm.provision "file", source: "../data/b.example.com.conf", destination: "tmp/"
+    config.vm.provision "file", source: "../data/hosts", destination: "tmp/"
 
     # Install Apache
     config.vm.provision "shell", inline: <<-SHELL
         sudo apt-get update
         sudo apt-get install -y apache2
+        sudo apt-get install -y php libapache2-mod-php
+        mv -f tmp/a.example.com.conf /etc/apache2/sites-available/
+        mv -f tmp/b.example.com.conf /etc/apache2/sites-available/
+        mv -f tmp/hosts /etc/
+        sudo ln -sf /etc/apache2/sites-available/a.example.com.conf /etc/apache2/sites-enabled/a.example.com.conf
+        sudo ln -sf /etc/apache2/sites-available/a.example.com.conf /etc/apache2/sites-enabled/b.example.com.conf
     SHELL
+
 end
