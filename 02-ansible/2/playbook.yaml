@@ -2,7 +2,7 @@
   hosts: nginx
   become: yes
   tasks:
-    - name: install packages
+    - name: Install packages
       become: yes
       apt:
         pkg:
@@ -20,10 +20,14 @@
       loop:
       - { src: './nginx.conf', dest: '/etc/nginx/nginx.conf' }
     
-    - name: start nginx
+    - name: Start nginx
       service:
         name: nginx
         state: started
+
+    - name: Reboot nginx
+      ansible.builtin.reboot:
+        msg: "Rebooting nginx in 5 seconds"
       
 - name: Nodes playbook
   hosts: nodes
