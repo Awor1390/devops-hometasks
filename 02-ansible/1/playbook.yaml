@@ -1,14 +1,14 @@
 - name: My first play
   hosts: myhosts
+  tags:
+    - configuration
+  gather_facts: no
   become: yes
   tasks:
     - name: install packages
       become: yes
       apt:
         pkg:
-        - vim
-        - mc
-        - sshpass
         - apache2
         - php 
         - libapache2-mod-php
