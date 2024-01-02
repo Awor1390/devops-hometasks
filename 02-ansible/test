@@ -1,0 +1,19 @@
+
+    - name: Ping my hosts
+      ansible.builtin.ping:
+
+    - name: Print message
+      ansible.builtin.debug:
+        msg: Ready to configure node
+
+    - name: Set alias ll
+      replace:
+        path: /home/vagrant/.bashrc
+        regexp: "^#alias ll='ls -l'$"
+        replace: "alias ll='ls -la'"
+
+    - name: Set colors
+      replace:
+        path: /home/vagrant/.bashrc
+        regexp: "^#force_color_prompt=yes$"
+        replace: "force_color_prompt=yes"
