@@ -6,7 +6,8 @@ Vagrant.configure("2") do |config|
         web1.vm.box = "generic/debian12"
         web1.vm.provision "shell", inline: "run web1"
         web1.vm.network "private_network", ip: "192.168.56.4"
-        web1.vm.network "forwarded_port", guest: 80, host: 8081, host_ip: "127.0.0.1"
+        web1.vm.network "forwarded_port", guest: 80, host: 80
+        web1.vm.synced_folder "../page1", "/var/www/html"
         web1.vm.provision "shell", inline: <<-SHELL
             sudo apt-get update
             sudo apt-get install -y apache2
@@ -16,10 +17,12 @@ Vagrant.configure("2") do |config|
     config.vm.define "web2" do |web2|
         web2.vm.box = "generic/debian12"
         web2.vm.network "private_network", ip: "192.168.56.5"
-        web2.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+        web2.vm.network "forwarded_port", guest: 80, host: 80
+        web2.vm.synced_folder "../page2", "/var/www/html"
         web2.vm.provision "shell", inline: <<-SHELL
             sudo apt-get update
             sudo apt-get install -y apache2
+            sudo apt-get install -y php libapache2-mod-php
         SHELL
     end
 end
