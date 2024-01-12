@@ -11,11 +11,8 @@
       yum:
         name:
         - epel-release
-        - mc
-        - vc
         - sshpass
         state: present
-
 
 #Playbook2
 - name: Main playbook
@@ -29,8 +26,6 @@
       yum:
         name:
         - epel-release
-        - mc
-        - vc
-        - sshpass
         - git
+        - sshpass
         state: present
