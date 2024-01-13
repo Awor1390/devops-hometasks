@@ -7,28 +7,27 @@
   gather_facts: no  
   become: yes
   tasks:
-#     - name: Main -> install yum packages
-#       yum:
-#         name:
-#         - epel-release   
-#         - git       
-#         state: present
+    - name: Main -> install yum packages
+      yum:
+        name:
+        - git       
+        state: present
 
-#     - name: Main -> Replace after the expression till the end of the file (requires Ansible >= 2.4)
-#       ansible.builtin.replace:
-#         path: /etc/sysconfig/puppetserver
-#         regexp: '-Xms2g -Xmx2g'
-#         replace: 'JAVA_ARGS="-Xms256m -Xmx256m'
+    - name: Main -> set JAVA_ARGS="-Xms256m -Xmx256m to /etc/sysconfig/puppetserver
+      ansible.builtin.replace:
+        path: /etc/sysconfig/puppetserver
+        regexp: '-Xms2g -Xmx2g'
+        replace: 'JAVA_ARGS="-Xms256m -Xmx256m'
 
-#     - name: Main -> Start puppet
-#       systemd:
-#         name: puppetserver
-#         state: started
+    - name: Main -> Start puppetserver
+      systemd:
+        name: puppetserver
+        state: started
 
-    # - name: Main -> Enable puppet
-    #   systemd:
-    #     name: puppetserver
-    #     enabled: yes
+    - name: Main -> Enable puppetserver
+      systemd:
+        name: puppetserver
+        enabled: yes
 
     - name: Main -> Add ports to firewall
       firewalld:
@@ -47,26 +46,26 @@
   become: yes
   tasks:
 
-    # - name: Slave - update /etc/puppetlabs/puppet/puppet.conf
-    #   ansible.builtin.lineinfile:
-    #     path: "{{ item.path }}"
-    #     line: "{{ item.text }}"
-    #   loop:
-    #   - { path: '/etc/puppetlabs/puppet/puppet.conf', text: '[agent]\nserver = master.puppet\nruninterval = 1m'}
-    #   - { path: '/etc/hosts', text: '192.168.56.40 master.puppet'}
+    - name: Slave - update /etc/puppetlabs/puppet/puppet.conf
+      ansible.builtin.lineinfile:
+        path: "{{ item.path }}"
+        line: "{{ item.text }}"
+      loop:
+      - { path: '/etc/puppetlabs/puppet/puppet.conf', text: '[agent]\nserver = master.puppet\nruninterval = 1m'}
+      - { path: '/etc/hosts', text: '192.168.56.40 master.puppet'}
       
-    # - name: Slave -> puppet-agent start
-    #   systemd:
-    #     name: puppet
-    #     state: started
+    - name: Slave -> puppet-agent start
+      systemd:
+        name: puppet
+        state: started
 
-    # - name: Slave -> puppet-agent enable
-    #   systemd:
-    #     name: puppet
-    #     enabled: yes
+    - name: Slave -> puppet-agent enable
+      systemd:
+        name: puppet
+        enabled: yes
 
-    # – name: Slave -> Restart puppet service
-    #   ansible.builtin.command: systemctl restart puppet
+    – name: Slave -> puppet-agent restart
+      ansible.builtin.command: systemctl restart puppet
 
 #Playbook3
 - name: Main playbook post restart
