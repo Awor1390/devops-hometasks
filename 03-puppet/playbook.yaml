@@ -1,20 +1,5 @@
 ---
-#Playbook 1
-- name: Slave playbook
-  hosts: slave
-  tags:
-    - configuration
-  gather_facts: no
-  become: yes
-  tasks:
-    - name: install yum packages
-      yum:
-        name:
-        - epel-release
-        - sshpass
-        state: present
-
-#Playbook2
+#Playbook1
 - name: Main playbook
   hosts: main
   tags:
@@ -22,10 +7,65 @@
   gather_facts: no  
   become: yes
   tasks:
-    - name: install yum packages
+    - name: Main -> install yum packages
+      yum:
+        name:
+        - epel-release   
+        - git       
+        state: present
+
+    - name: Main -> Replace after the expression till the end of the file (requires Ansible >= 2.4)
+      ansible.builtin.replace:
+        path: /etc/sysconfig/puppetserver
+        regexp: '^JAVA_ARGS="-Xms2g -Xmx2g$'
+        replace: 'JAVA_ARGS="-Xms256m -Xmx256m'
+
+    - name: Main -> Start puppet
+      systemd:
+        name: puppetserver
+        state: started
+
+    - name: Main -> Enable puppet
+      systemd:
+        name: puppetserver
+        enabled: yes
+
+#Playbook2
+- name: Slave playbook
+  hosts: slave
+  tags:
+    - configuration
+  gather_facts: no
+  become: yes
+  tasks:
+    
+    - name: Slave -> Install or upgrade the net-tools package
+      yum:
+        name: net-tools
+        state: latest
+    
+    - name: Slave -> tcp ports facts
+      listen_ports_facts:
+
+    - name: Slave -> Add ports to firewall
+      firewalld:
+        port: 8140/tcp
+        state: enabled
+        immediate: true
+        permanent: true
+      register: ports_added_to_firewalld
+
+    - name: Slave -> print Ports Added
+      debug:
+        var: ports_added_to_firewalld
+
+    - name: Slave -> install yum packages
       yum:
         name:
         - epel-release
-        - git
         - sshpass
+        - net-tools
         state: present
+
+    - name: Slave -> Run puppet agent and fail if anything goes wrong
+      community.general.puppet:
