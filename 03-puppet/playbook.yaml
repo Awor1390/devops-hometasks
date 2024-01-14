@@ -7,14 +7,6 @@
   gather_facts: no  
   become: yes
   tasks:
-    - name: Main -> install yum packages
-      yum:
-        name:
-        - git    
-        state: present
-
-    # - name: Main -> install r10k
-    #   ansible.builtin.command: gem install r10k
 
     - name: Main -> set JAVA_ARGS="-Xms256m -Xmx256m to /etc/sysconfig/puppetserver
       ansible.builtin.replace:
@@ -34,12 +26,39 @@
     - name: Main -> puppetserver start
       ansible.builtin.command: systemctl start puppetserver
  
-    - name: Main -> Add ports to firewall
+    - name: Main -> Add ports to firewall on master.puppet
       ansible.builtin.command:
         cmd: "{{ item.text }}"
       loop:
       - { text: 'firewall-cmd --add-port=8140/tcp'}
       - { text: 'firewall-cmd --runtime-to-permanent'}
+
+    - name: Main -> install r10k on master.puppet
+      gem:
+        name: r10k
+        version: 3.6.0
+        state: present
+        user_install: false
+        executable: /opt/puppetlabs/puppet/bin/gem
+
+    - name: Main -> create r10k dir /etc/puppetlabs/r10k
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: "{{ item.state }}"
+        mode: '0755'
+      loop:
+      - { path: '/etc/puppetlabs/r10k' , state: 'directory'}
+  
+    - name: Main ->  copy r10k.yaml file to puppetlabs/r10k
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: '0644'
+      loop:
+      - { src: './r10k.yaml', dest: '/etc/puppetlabs/r10k/r10k.yaml' }
+      
 
 #Playbook2
 - name: Slave playbook
@@ -58,9 +77,10 @@
     - name: Slave - update /etc/hosts
       ansible.builtin.lineinfile:
         path: "/etc/hosts"
-        line: "192.168.56.40 master.puppet"
+        line: "192.168.56.40 master.puppet puppet"
       
-    - name: Slave -> puppet-agent start
-      systemd:
-        name: puppet
-        state: started
+    - name: Slvae -> puppetagent enable
+      ansible.builtin.command: systemctl enable puppet
+
+    - name: Slave -> puppetsepuppetagentrver start
+      ansible.builtin.command: systemctl start puppet

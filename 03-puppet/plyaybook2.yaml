@@ -1,11 +1,13 @@
 ---
 - name: Main playbook post restart
-  hosts: main
+  hosts: slave
   tags:
     - configuration
   gather_facts: no  
   become: yes
   tasks:
-    - name: Reboot nginx
-      ansible.builtin.reboot:
-        msg: "Rebooting nginx in 5 seconds"
+    - name: Ensure 
+       ansible.builtin.cron:
+        name: "crono run"
+        minute: "/2"
+        job: "ls -alh > /dev/null"
