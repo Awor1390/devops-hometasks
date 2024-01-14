@@ -1,0 +1,11 @@
+---
+- name: Main playbook post restart
+  hosts: main
+  tags:
+    - configuration
+  gather_facts: no  
+  become: yes
+  tasks:
+    - name: Reboot nginx
+      ansible.builtin.reboot:
+        msg: "Rebooting nginx in 5 seconds"

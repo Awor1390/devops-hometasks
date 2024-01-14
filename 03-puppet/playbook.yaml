@@ -7,11 +7,11 @@
   gather_facts: no  
   become: yes
   tasks:
-    # - name: Main -> install yum packages
-    #   yum:
-    #     name:
-    #     - git       
-    #     state: present
+    - name: Main -> install yum packages
+      yum:
+        name:
+        - git       
+        state: present
 
     - name: Main -> set JAVA_ARGS="-Xms256m -Xmx256m to /etc/sysconfig/puppetserver
       ansible.builtin.replace:
@@ -19,20 +19,11 @@
         regexp: '-Xms2g -Xmx2g'
         replace: 'JAVA_ARGS="-Xms256m -Xmx256m'
 
-    - name: Stop puppetserver service
-      systemd:
-        name: puppetserver
-        state: stopped
+    - name: Main -> puppetserver enable
+      ansible.builtin.command: systemctl enable puppetserver
 
-    - name: Main -> Start puppetserver
-      systemd:
-        name: puppetserver
-        state: started
-
-    - name: Main -> Enable puppetserver
-      systemd:
-        name: puppetserver
-        enabled: yes
+    # - name: Main -> puppetserver start
+    #   ansible.builtin.command: systemctl start puppetserver
 
     - name: Main -> Add ports to firewall
       firewalld:
@@ -63,11 +54,6 @@
       systemd:
         name: puppet
         state: started
-
-    - name: Slave -> puppet-agent enable
-      systemd:
-        name: puppet
-        enabled: yes
 
     - name: Slave -> puppet-agent restart
       ansible.builtin.command: systemctl restart puppet
