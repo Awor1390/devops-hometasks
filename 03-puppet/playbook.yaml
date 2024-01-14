@@ -10,28 +10,36 @@
     - name: Main -> install yum packages
       yum:
         name:
-        - git       
+        - git    
         state: present
+
+    # - name: Main -> install r10k
+    #   ansible.builtin.command: gem install r10k
 
     - name: Main -> set JAVA_ARGS="-Xms256m -Xmx256m to /etc/sysconfig/puppetserver
       ansible.builtin.replace:
         path: /etc/sysconfig/puppetserver
         regexp: '-Xms2g -Xmx2g'
-        replace: 'JAVA_ARGS="-Xms256m -Xmx256m'
+        replace: '-Xms256m -Xmx256m'
+
+    - name: Main -> create autosign.conf
+      ansible.builtin.lineinfile:
+        path: /etc/puppetlabs/puppet/autosign.conf
+        line: "slave1.puppet\nslave2.puppet"
+        create: yes
 
     - name: Main -> puppetserver enable
       ansible.builtin.command: systemctl enable puppetserver
 
-    # - name: Main -> puppetserver start
-    #   ansible.builtin.command: systemctl start puppetserver
-
+    - name: Main -> puppetserver start
+      ansible.builtin.command: systemctl start puppetserver
+ 
     - name: Main -> Add ports to firewall
-      firewalld:
-        port: 8140/tcp
-        state: enabled
-        immediate: true
-        permanent: true
-      register: ports_added_to_firewalld
+      ansible.builtin.command:
+        cmd: "{{ item.text }}"
+      loop:
+      - { text: 'firewall-cmd --add-port=8140/tcp'}
+      - { text: 'firewall-cmd --runtime-to-permanent'}
 
 #Playbook2
 - name: Slave playbook
@@ -44,33 +52,15 @@
 
     - name: Slave - update /etc/puppetlabs/puppet/puppet.conf
       ansible.builtin.lineinfile:
-        path: "{{ item.path }}"
-        line: "{{ item.text }}"
-      loop:
-      - { path: '/etc/puppetlabs/puppet/puppet.conf', text: '[agent]\nserver = master.puppet\nruninterval = 1m'}
-      - { path: '/etc/hosts', text: '192.168.56.40 master.puppet'}
+        path: "/etc/puppetlabs/puppet/puppet.conf"
+        line: "[agent]\nserver = master.puppet\nruninterval = 1m"
+
+    - name: Slave - update /etc/hosts
+      ansible.builtin.lineinfile:
+        path: "/etc/hosts"
+        line: "192.168.56.40 master.puppet"
       
     - name: Slave -> puppet-agent start
       systemd:
         name: puppet
         state: started
-
-    - name: Slave -> puppet-agent restart
-      ansible.builtin.command: systemctl restart puppet
-
-#Playbook3
-- name: Main playbook post restart
-  hosts: main
-  tags:
-    - configuration
-  gather_facts: no  
-  become: yes
-  tasks:
-
-    - name: Main post rst -> sign slaves certificates
-      ansible.builtin.command:
-        cmd: "{{ item.text }}"
-      loop:
-      - { text: '/opt/puppetlabs/bin/puppetserver ca sign --certname slave1.puppet'}
-      - { text: '/opt/puppetlabs/bin/puppetserver ca sign --certname slave2.puppet'}
-      
