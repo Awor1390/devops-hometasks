@@ -58,8 +58,13 @@
         mode: '0644'
       loop:
       - { src: './r10k.yaml', dest: '/etc/puppetlabs/r10k/r10k.yaml' }
-      
 
+    - name: Ensure 
+      ansible.builtin.cron:
+        name: "crono run"
+        minute: "*/2"
+        job: "/opt/puppetlabs/puppet/bin/r10k deploy environment -p"
+      
 #Playbook2
 - name: Slave playbook
   hosts: slave

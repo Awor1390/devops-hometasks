@@ -1,3 +1,4 @@
 /opt/puppetlabs/puppet/bin/r10k deploy environment -p
+/opt/puppetlabs/puppet/bin/r10k environment --modules
 cd /etc/puppetlabs/r10k/r10k.yaml
 cd /etc/puppetlabs/code/environments/
