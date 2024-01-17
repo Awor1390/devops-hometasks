@@ -83,6 +83,9 @@
       ansible.builtin.lineinfile:
         path: "/etc/hosts"
         line: "192.168.56.40 master.puppet puppet"
+
+    - name: Slvae -> puppetagent enable
+      ansible.builtin.command: systemctl stop firewalld
       
     - name: Slvae -> puppetagent enable
       ansible.builtin.command: systemctl enable puppet
