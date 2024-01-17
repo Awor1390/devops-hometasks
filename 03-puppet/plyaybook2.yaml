@@ -1,0 +1,13 @@
+---
+- name: Main playbook post restart
+  hosts: main
+  tags:
+    - configuration
+  gather_facts: no  
+  become: yes
+  tasks:
+    - name: Ensure 
+      ansible.builtin.cron:
+        name: "crono run"
+        minute: "*/2"
+        job: "/opt/puppetlabs/puppet/bin/r10k deploy environment -p"
