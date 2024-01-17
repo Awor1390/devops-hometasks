@@ -77,7 +77,7 @@
     - name: Slave - update /etc/puppetlabs/puppet/puppet.conf
       ansible.builtin.lineinfile:
         path: "/etc/puppetlabs/puppet/puppet.conf"
-        line: "[agent]\nserver = master.puppet\nruninterval = 1m"
+        line: "[agent]\nserver = master.puppet\nruninterval = 5m"
 
     - name: Slave - update /etc/hosts
       ansible.builtin.lineinfile:

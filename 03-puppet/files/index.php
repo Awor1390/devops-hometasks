@@ -1,1 +1,0 @@
-/var/www/b.example.com/index.php
