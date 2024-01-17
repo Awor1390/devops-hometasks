@@ -1,0 +1,94 @@
+---
+#Playbook1
+- name: Main playbook
+  hosts: main
+  tags:
+    - configuration
+  gather_facts: no  
+  become: yes
+  tasks:
+
+    - name: Main -> set JAVA_ARGS="-Xms256m -Xmx256m to /etc/sysconfig/puppetserver
+      ansible.builtin.replace:
+        path: /etc/sysconfig/puppetserver
+        regexp: '-Xms2g -Xmx2g'
+        replace: '-Xms256m -Xmx256m'
+
+    - name: Main -> create autosign.conf
+      ansible.builtin.lineinfile:
+        path: /etc/puppetlabs/puppet/autosign.conf
+        line: "slave1.puppet\nslave2.puppet"
+        create: yes
+
+    - name: Main -> puppetserver enable
+      ansible.builtin.command: systemctl enable puppetserver
+
+    - name: Main -> puppetserver start
+      ansible.builtin.command: systemctl start puppetserver
+ 
+    - name: Main -> Add ports to firewall on master.puppet
+      ansible.builtin.command:
+        cmd: "{{ item.text }}"
+      loop:
+      - { text: 'firewall-cmd --add-port=8140/tcp'}
+      - { text: 'firewall-cmd --runtime-to-permanent'}
+
+    - name: Main -> install r10k on master.puppet
+      gem:
+        name: r10k
+        version: 3.6.0
+        state: present
+        user_install: false
+        executable: /opt/puppetlabs/puppet/bin/gem
+
+    - name: Main -> create r10k dir /etc/puppetlabs/r10k
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: "{{ item.state }}"
+        mode: '0755'
+      loop:
+      - { path: '/etc/puppetlabs/r10k' , state: 'directory'}
+  
+    - name: Main ->  copy r10k.yaml file to puppetlabs/r10k
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: '0644'
+      loop:
+      - { src: './r10k.yaml', dest: '/etc/puppetlabs/r10k/r10k.yaml' }
+
+    - name: Ensure 
+      ansible.builtin.cron:
+        name: "crono run"
+        minute: "*/2"
+        job: "/opt/puppetlabs/puppet/bin/r10k deploy environment -p"
+      
+#Playbook2
+- name: Slave playbook
+  hosts: slave
+  tags:
+    - configuration
+  gather_facts: no
+  become: yes
+  tasks:
+
+    - name: Slave - update /etc/puppetlabs/puppet/puppet.conf
+      ansible.builtin.lineinfile:
+        path: "/etc/puppetlabs/puppet/puppet.conf"
+        line: "[agent]\nserver = master.puppet\nruninterval = 5m"
+
+    - name: Slave - update /etc/hosts
+      ansible.builtin.lineinfile:
+        path: "/etc/hosts"
+        line: "192.168.56.40 master.puppet puppet"
+
+    - name: Slvae -> puppetagent enable
+      ansible.builtin.command: systemctl stop firewalld
+      
+    - name: Slvae -> puppetagent enable
+      ansible.builtin.command: systemctl enable puppet
+
+    - name: Slave -> puppetsepuppetagentrver start
+      ansible.builtin.command: systemctl start puppet
