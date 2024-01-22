@@ -8,6 +8,27 @@
   become: yes
   tasks:
 #Part1
+
+
+    - name: Install nginx
+      yum:
+        name: nginx
+        state: present
+
+    - name: Copy files with owner and permissions
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: '0644'
+      loop:
+      - { src: './nginx.conf', dest: '/etc/nginx/nginx.conf' }
+    
+    - name: Start nginx
+      service:
+        name: nginx
+        state: started
     
     - name: Main -> stop firewall
       ansible.builtin.command: systemctl stop firewalld
