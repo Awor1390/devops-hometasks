@@ -1,3 +1,3 @@
 #!/bin/sh
-docker build -t hometask-image .
-docker run --rm -p 8087:80 hometask-image 
+# docker build -t hometask-image .
+docker run --rm -it -p 8081:8081 hometask-image
