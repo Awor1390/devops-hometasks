@@ -1,0 +1,23 @@
+FROM golang:1.16 AS builder
+
+LABEL maintainer="pwd1390@mail.ru"
+
+USER root
+
+WORKDIR /tmp
+
+RUN apt-get update && apt-get install -y git && git clone https://github.com/Fenikks/word-cloud-generator.git
+
+WORKDIR /tmp/word-cloud-generator
+
+RUN make
+
+FROM debian
+
+COPY --from=builder /tmp/word-cloud-generator/artifacts/linux .
+
+USER root
+
+RUN chmod 777 word-cloud-generator
+
+CMD ./word-cloud-generator
