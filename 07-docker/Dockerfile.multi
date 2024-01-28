@@ -12,7 +12,9 @@ WORKDIR /tmp/word-cloud-generator
 
 RUN make
 
-FROM debian
+FROM alpine
+
+RUN apk add --no-cache libc6-compat 
 
 COPY --from=builder /tmp/word-cloud-generator/artifacts/linux .
 
