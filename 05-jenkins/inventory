@@ -1,11 +1,7 @@
 master  ansible_host=127.0.0.1 ansible_connection=local
 
-[nginx]
-192.168.56.33
-
-[nodes]
-192.168.56.31
-192.168.56.32
+[jenkins]
+192.168.56.2
 
 [all:vars]
 ansible_connection=ssh

@@ -1,97 +1,60 @@
 ---
 #Playbook 1
-- name: Nodes playbook
-  hosts: nodes
+- name: Jenkins playbook
+  hosts: jenkins
   tags:
     - configuration
-  gather_facts: no
+  gather_facts: yes
   become: yes
-  tasks:
-    - name: install packages
-      become: yes
-      apt:
-        pkg:
-        - vim
-        - mc
-        - sshpass
-        - apache2
-        - php 
-        - libapache2-mod-php
-        state: present
 
-    - name: Create web page directories and files
-      ansible.builtin.file:
-        path: "{{ item.path }}"
-        state: "{{ item.state }}"
-        mode: '0755'
-      loop:
-      - { path: '/var/www/a.example.com' , state: 'directory'}
-      - { path: '/var/www/b.example.com' , state: 'directory'}
+  vars:
+    jenkins_version: "2.442"
+    jenkins_hostname: localhost
+    jenkins_plugins_install_dependencies: true
+    jenkins_plugins_state: present    
+    jenkins_plugins:
+      - timestamper
+      - Workspace Cleanup
+      - credentials 
+      - credentials-binding
+      - locale
+      - git
+      - timestamper
+      - pipeline-groovy-lib
+      - workflow-basic-steps
+      - workflow-cps
+      - workflow-multibranch
+      - pipeline-build-step
+      - pipeline-input-step
+      - pipeline-milestone-step
+      - pipeline-stage-step
+      - pipeline-model-definition 
+      - configuration-as-code 
+      - go
+    # java_packages:
+    #   - openjdk-17-jdk
 
-    - name: Copy files with owner and permissions
-      ansible.builtin.copy:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-        owner: root
-        group: root
-        mode: '0644'
-      loop:
-      - { src: './index.html', dest: '/var/www/a.example.com/index.html' }
-      - { src: './index.php',  dest: '/var/www/b.example.com/index.php' }
-      - { src: './a.example.com.conf',  dest: '/etc/apache2/sites-available/a.example.com.conf' }
-      - { src: './b.example.com.conf',  dest: '/etc/apache2/sites-available/b.example.com.conf' }
+  pre_tasks:
+    - include_tasks: debian-setup.yml
+      when: ansible_os_family == 'Debian'
 
-    - name: Add apache listen ports
-      ansible.builtin.lineinfile:
-        path: "{{ item.path }}"
-        line: "{{ item.text }}"
-      loop:
-      - { path: '/etc/apache2/ports.conf', text: 'Listen 8080'}
-      - { path: '/etc/apache2/ports.conf', text: 'Listen 8081'}
-    
-    - name: Create symbolic link 
-      file:
-        src: "{{ item.src}}"
-        dest: "{{ item.dest }}"
-        state: link
-      loop:  
-      - { src: '/etc/apache2/sites-available/a.example.com.conf',  dest: '/etc/apache2/sites-enabled/a.example.com.conf' }
-      - { src: '/etc/apache2/sites-available/b.example.com.conf',  dest: '/etc/apache2/sites-enabled/b.example.com.conf' }
+  roles:
+    - role: geerlingguy.java
+    - role: geerlingguy.jenkins
 
-    - name: Reboot apache
-      ansible.builtin.reboot:
-        msg: "Rebooting apache in 5 seconds"
+  # tasks:
+  #   - name: Create a jenkins job using basic authentication
+  #     community.general.jenkins_job:
+  #       config: "{{ lookup('file', 'test.xml') }}"
+  #       name: test
+  #       password: admin
+  #       url: http://localhost:8080
+  #       user: admin 
 
-#Playbook2
-- name: Nginx playbook
-  hosts: nginx
-  tags:
-    - configuration
-  gather_facts: no  
-  become: yes
-  tasks:
-    - name: Install packages
-      become: yes
-      apt:
-        pkg:
-        - nginx
-        state: present
-
-    - name: Copy files with owner and permissions
-      ansible.builtin.copy:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-        owner: root
-        group: root
-        mode: '0644'
-      loop:
-      - { src: './nginx.conf', dest: '/etc/nginx/nginx.conf' }
-    
-    - name: Start nginx
-      service:
-        name: nginx
-        state: started
-
-    - name: Reboot nginx
-      ansible.builtin.reboot:
-        msg: "Rebooting nginx in 5 seconds"
+  post_tasks:
+    - name: Check if Jenkins is running.
+      uri:
+        url: "http://127.0.0.1:8080/"
+        status_code:
+          - 200
+          - 403
