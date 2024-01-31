@@ -13,20 +13,9 @@
     jenkins_plugins_install_dependencies: true
     jenkins_plugins_state: present    
     jenkins_plugins:
-      - credentials 
-      - credentials-binding
       - locale
       - git
       - timestamper
-      - pipeline-groovy-lib
-      - workflow-basic-steps
-      - workflow-cps
-      - workflow-multibranch
-      - pipeline-build-step
-      - pipeline-input-step
-      - pipeline-milestone-step
-      - pipeline-stage-step
-      - pipeline-model-definition 
       - configuration-as-code 
       - golang
       - prism-api
@@ -51,12 +40,13 @@
       ansible.builtin.file:
         path: "{{ item.path }}"
         state: "{{ item.state }}"
+        group: jenkins
+        owner: jenkins
         mode: '0755'
       loop:
-      - { path: '/var/lib/jenkins/jobs/build' , state: 'directory'}
-
-    - name: copy files
-      copy: src=/vagrant/build/ dest=/var/lib/jenkins/jobs/build/ remote_src=yes directory_mode=yes          
+      - { path: '/var/lib/jenkins/jobs/build' , state: 'directory'}    
+      - { path: '/var/lib/jenkins/casc_configs' , state: 'directory'} 
+      - { path: '/var/lib/jenkins/init.groovy.d' , state: 'directory'}    
     
     - name: Copy files
       ansible.builtin.copy:
@@ -66,7 +56,10 @@
         group: jenkins
         mode: '0644'
       loop:
-      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/jenkins.yml' }
+      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/casc_jenkins.yaml' }
+      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/casc_configs/casc_jenkins.yaml' }
+      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/init.groovy.d/casc_jenkins.yaml' }
+      - { src: '/vagrant/build/config.xml', dest: '/var/lib/jenkins/jobs/build/config.xml' }
 
     - name: Stop Jenkins service
       ansible.builtin.service:

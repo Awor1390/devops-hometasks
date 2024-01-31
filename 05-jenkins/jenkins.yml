@@ -124,12 +124,3 @@ tool:
   mavenGlobalConfig:
     globalSettingsProvider: "standard"
     settingsProvider: "standard"
-credentials:
-  system:
-    domainCredentials:
-    - credentials:
-      - usernamePassword:
-          scope:    GLOBAL
-          id:       slave_creds
-          username: vagrant
-          password: vagrant
