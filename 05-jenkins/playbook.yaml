@@ -38,29 +38,6 @@
   roles:
     - role: geerlingguy.java
     - role: geerlingguy.jenkins
-
-  tasks:
-    - name: Create dir
-      ansible.builtin.file:
-        path: "{{ item.path }}"
-        state: "{{ item.state }}"
-        mode: '0755'
-      loop:
-      - { path: '/var/lib/jenkins/casc_configs' , state: 'directory'}
-      - { path: '/var/lib/jenkins/jobs/build' , state: 'directory'}
-    
-    - name: Copy files for setup jenkins plugin
-      ansible.builtin.copy:
-        src: "{{ item.src }}"
-        dest: "{{ item.dest }}"
-        owner: root
-        group: root
-        mode: '0644'
-      loop:
-      - { src: '/vagrant/jenkins.yaml', dest: '/var/lib/jenkins/casc_configs/jenkins.yaml' }
-    
-    - name: copy job 'build'
-      copy: src=/vagrant/build/ dest=/var/lib/jenkins/jobs/build/ remote_src=yes directory_mode=yes
     
     - name: Stop Jenkins service
       ansible.builtin.service:
