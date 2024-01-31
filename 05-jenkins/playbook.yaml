@@ -13,8 +13,6 @@
     jenkins_plugins_install_dependencies: true
     jenkins_plugins_state: present    
     jenkins_plugins:
-      - timestamper
-      - Workspace Cleanup
       - credentials 
       - credentials-binding
       - locale
@@ -30,9 +28,8 @@
       - pipeline-stage-step
       - pipeline-model-definition 
       - configuration-as-code 
-      - go
-    # java_packages:
-    #   - openjdk-17-jdk
+      - golang
+      - prism-api
 
   pre_tasks:
     - include_tasks: debian-setup.yml
@@ -42,14 +39,39 @@
     - role: geerlingguy.java
     - role: geerlingguy.jenkins
 
-  # tasks:
-  #   - name: Create a jenkins job using basic authentication
-  #     community.general.jenkins_job:
-  #       config: "{{ lookup('file', 'test.xml') }}"
-  #       name: test
-  #       password: admin
-  #       url: http://localhost:8080
-  #       user: admin 
+  tasks:
+    - name: Create dir
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: "{{ item.state }}"
+        mode: '0755'
+      loop:
+      - { path: '/var/lib/jenkins/casc_configs' , state: 'directory'}
+      - { path: '/var/lib/jenkins/jobs/build' , state: 'directory'}
+    
+    - name: Copy files for setup jenkins plugin
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: '0644'
+      loop:
+      - { src: '/vagrant/jenkins.yaml', dest: '/var/lib/jenkins/casc_configs/jenkins.yaml' }
+    
+    - name: copy job 'build'
+      copy: src=/vagrant/build/ dest=/var/lib/jenkins/jobs/build/ remote_src=yes directory_mode=yes
+    
+    - name: Stop Jenkins service
+      ansible.builtin.service:
+        name: jenkins
+        state: stopped
+
+    - name: Start Jenkins service
+      ansible.builtin.service:
+        name: jenkins
+        state: started
+        enabled: yes 
 
   post_tasks:
     - name: Check if Jenkins is running.

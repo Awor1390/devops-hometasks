@@ -10,6 +10,7 @@ Vagrant.configure("2") do |config|
             apt-get update
             apt-get install -y ansible sshpass 
             ansible-galaxy collection install community.general
+            sed -i 's/^Environment="JAVA_OPTS=-Djava.awt.headless=true"/Environment="JAVA_OPTS=-Djava.awt.headless=true -Dcasc.jenkins.config=${JENKINS_HOME}/casc_configs -Djenkins.install.runSetupWizard=false"/g' /lib/systemd/system/jenkins.service
             export LC_ALL=C.UTF-8
         SHELL
         jenkins.vm.provision :ansible_local do |ansible|

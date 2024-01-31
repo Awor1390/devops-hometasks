@@ -1,0 +1,30 @@
+---
+#Playbook 1
+- name: Jenkins playbook
+  hosts: jenkins
+  tags:
+    - configuration
+  gather_facts: yes
+  become: yes
+  tasks:
+
+    - name: Create dir
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: "{{ item.state }}"
+        mode: '0755'
+      loop:
+     
+     - { path: '/var/lib/jenkins/jobs/build' , state: 'directory'}
+    - name: copy files
+      copy: src=/vagrant/build/ dest=/var/lib/jenkins/jobs/build/ remote_src=yes directory_mode=yes
+
+    # - name: Copy files
+    #   ansible.builtin.copy:
+    #     src: "{{ item.src }}"
+    #     dest: "{{ item.dest }}"
+    #     owner: root
+    #     group: root
+    #     mode: '0644'
+    #   loop:
+    #   - { src: '/vagrant/build/*', dest: '/var/lib/jenkins/jobs/' }
