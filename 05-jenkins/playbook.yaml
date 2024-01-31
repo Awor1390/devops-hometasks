@@ -8,7 +8,7 @@
   become: yes
 
   vars:
-    jenkins_version: "2.442"
+    jenkins_version: "2.443"
     jenkins_hostname: localhost
     jenkins_plugins_install_dependencies: true
     jenkins_plugins_state: present    
@@ -46,16 +46,27 @@
         status_code:
           - 200
           - 403
+
+    - name: Create dir
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: "{{ item.state }}"
+        mode: '0755'
+      loop:
+      - { path: '/var/lib/jenkins/jobs/build' , state: 'directory'}
+
+    - name: copy files
+      copy: src=/vagrant/build/ dest=/var/lib/jenkins/jobs/build/ remote_src=yes directory_mode=yes          
     
     - name: Copy files
       ansible.builtin.copy:
         src: "{{ item.src }}"
         dest: "{{ item.dest }}"
-        owner: root
-        group: root
+        owner: jenkins
+        group: jenkins
         mode: '0644'
       loop:
-      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/jenkins.yml' }  
+      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/jenkins.yml' }
 
     - name: Stop Jenkins service
       ansible.builtin.service:
@@ -66,5 +77,4 @@
       ansible.builtin.service:
         name: jenkins
         state: started
-        enabled: yes 
-  
+        enabled: yes
