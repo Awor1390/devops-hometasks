@@ -11,7 +11,9 @@ Vagrant.configure("2") do |config|
             apt-get install -y ansible sshpass 
             ansible-galaxy collection install community.general
             mkdir /var/lib/jenkins/casc_configs
+            mkdir /var/lib/jenkins/jobs/build 
             cp /vagrant/jenkins.yml /var/lib/jenkins/casc_configs/
+            cp -r /vagrant/build dest=/var/lib/jenkins/jobs/build
             sed -i 's/^Environment="JAVA_OPTS=-Djava.awt.headless=true"/Environment="JAVA_OPTS=-Djava.awt.headless=true -Dcasc.jenkins.config=${JENKINS_HOME}/casc_configs -Djenkins.install.runSetupWizard=false"/g' /lib/systemd/system/jenkins.service
             # -Dcasc.jenkins.config=${JENKINS_HOME}/casc_configs
             export LC_ALL=C.UTF-8
