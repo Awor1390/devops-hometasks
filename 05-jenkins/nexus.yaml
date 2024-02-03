@@ -1,0 +1,13 @@
+
+---
+- name: Nexus
+  hosts: nexus
+  become: yes
+    
+  roles:
+    - role: malec0101.temurin.java
+      java_packages: "temurin-8-jdk"
+    - { role: geerlingguy.apache }
+    # RedHat/CentOS only
+    #- { role: geerlingguy.apache, apache_create_vhosts: no, apache_remove_default_vhost: true, tags: ["geerlingguy.apache"] }
+    - { role: ansible-thoteam.nexus3-oss }

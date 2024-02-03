@@ -3,21 +3,52 @@ Vagrant.configure("2") do |config|
     config.vm.synced_folder  ".", "/vagrant", disabled: false   
     config.vm.box = "generic/debian11"
     
+    # Jenkins VM config
     config.vm.define "jenkins" do |jenkins|
         jenkins.vm.network "private_network", ip: "192.168.56.2"
         jenkins.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
+        
         jenkins.vm.provision "shell", inline: <<-SHELL
             apt-get update
             apt-get install -y ansible sshpass 
             ansible-galaxy collection install community.general
-            # sed -i 's/^Environment="JAVA_OPTS=-Djava.awt.headless=true"/Environment="JAVA_OPTS=-Dcasc.jenkins.config=${JENKINS_HOME}/casc_configs"/g' /lib/systemd/system/jenkins.service
-            # -Dcasc.jenkins.config=${JENKINS_HOME}/casc_configs
-            export LC_ALL=C.UTF-8
         SHELL
+
         jenkins.vm.provision :ansible_local do |ansible|
             ansible.playbook       = "playbook.yaml"
             ansible.limit          = "all"
             ansible.inventory_path = "inventory"
         end
     end
+
+    # Nexus VM config
+    config.vm.define "nexus" do |nexus|
+        nexus.vm.provider("virtualbox"){ |vb| vb.memory = 4096 }
+        nexus.vm.network "private_network", ip: "192.168.56.3"
+        nexus.vm.network "forwarded_port", guest: 8081, host: 8091
+        nexus.vm.synced_folder  ".", "/vagrant", disabled: false
+    
+        nexus.vm.provision :ansible_local do |ans|
+            ans.playbook = "nexus.yaml"
+        end
+    end
+
+    # Staging VM config
+    config.vm.define "staging" do |host|
+        host.vm.network "private_network", ip: "192.168.56.80"
+        host.vm.provider("virtualbox"){ |vb| vb.memory = 256 }
+    end
+
+    # Production VM config
+    config.vm.define "production" do |host|
+        host.vm.network "private_network", ip: "192.168.56.85"
+        host.vm.provider("virtualbox"){ |vb| vb.memory = 256 }
+    end
+
+    # Global ssh auth disable
+    config.vm.provision "shell", inline: <<-SHELL
+        sed -i "s/^PasswordAuthentication no\$/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+        service sshd restart
+        echo -e "vagrant\nvagrant" | passwd vagrant
+    SHELL
 end
