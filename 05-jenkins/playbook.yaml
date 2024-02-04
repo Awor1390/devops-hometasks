@@ -2,40 +2,32 @@
 #Playbook 1
 - name: Jenkins playbook
   hosts: jenkins
-  tags:
-    - configuration
   gather_facts: yes
   become: yes
 
   vars:
-    jenkins_version: "2.443"
     jenkins_hostname: localhost
-    jenkins_plugins_install_dependencies: true
-    jenkins_plugins_state: present    
-    jenkins_plugins:
-      - locale
-      - git
-      - timestamper
-      - configuration-as-code 
-      - golang
-      - prism-api
+    java_packages: "openjdk-17-jdk" 
+    jenkins_http_port: 8989
+    jenkins_admin_username: admin
+    jenkins_admin_password: admin  
 
-  pre_tasks:
-    - include_tasks: debian-setup.yml
-      when: ansible_os_family == 'Debian'
+    jenkins_plugins_install_dependencies: true
+    jenkins_plugins_state: latest
+    jenkins_plugins:              # имена плагинов стоит указывать, как написано в ссылке на плагин, если кликнуть на него из самого jenkins 
+      - configuration-as-code     # пример: https://plugins.jenkins.io/golang/ , то есть имя плагина golang
+      - nexus-artifact-uploader  
+      - git
+      - golang
+      - ssh
+      - ws-cleanup
+    jenkins_java_options: "-Dcasc.jenkins.config=${JENKINS_HOME}/casc_configs"
 
   roles:
     - role: geerlingguy.java
     - role: geerlingguy.jenkins 
 
   post_tasks:
-    - name: Check if Jenkins is running.
-      uri:
-        url: "http://127.0.0.1:8080/"
-        status_code:
-          - 200
-          - 403
-
     - name: Create dir
       ansible.builtin.file:
         path: "{{ item.path }}"
@@ -45,8 +37,7 @@
         mode: '0755'
       loop:
       - { path: '/var/lib/jenkins/jobs/build' , state: 'directory'}    
-      - { path: '/var/lib/jenkins/casc_configs' , state: 'directory'} 
-      - { path: '/var/lib/jenkins/init.groovy.d' , state: 'directory'}    
+      - { path: '/var/lib/jenkins/casc_configs' , state: 'directory'}   
     
     - name: Copy files
       ansible.builtin.copy:
@@ -56,9 +47,7 @@
         group: jenkins
         mode: '0644'
       loop:
-      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/casc_jenkins.yaml' }
-      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/casc_configs/casc_jenkins.yaml' }
-      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/init.groovy.d/casc_jenkins.yaml' }
+      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/casc_configs/jenkins.yaml' }
       - { src: '/vagrant/build/config.xml', dest: '/var/lib/jenkins/jobs/build/config.xml' }
 
     - name: Stop Jenkins service
