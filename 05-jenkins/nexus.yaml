@@ -18,7 +18,7 @@
       email: dev@company.com
       password: "dev"
       roles:
-      - developers
+      - Developpers
 
     # nexus_repos_maven_hosted:
     # - name: company-project1
