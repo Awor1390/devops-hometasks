@@ -2,32 +2,64 @@
 #Playbook 1
 - name: Jenkins playbook
   hosts: jenkins
-  gather_facts: yes
+  gather_facts: no
   become: yes
 
-  vars:
-    jenkins_hostname: localhost
-    java_packages: "openjdk-17-jdk" 
-    jenkins_http_port: 8989
-    jenkins_admin_username: admin
-    jenkins_admin_password: admin  
+  tasks:
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
 
-    jenkins_plugins_install_dependencies: true
-    jenkins_plugins_state: latest
-    jenkins_plugins:              # имена плагинов стоит указывать, как написано в ссылке на плагин, если кликнуть на него из самого jenkins 
-      - configuration-as-code     # пример: https://plugins.jenkins.io/golang/ , то есть имя плагина golang
-      - nexus-artifact-uploader  
-      - git
-      - golang
-      - ssh
-      - ws-cleanup
-    jenkins_java_options: "-Dcasc.jenkins.config=${JENKINS_HOME}/casc_configs"
+    - name: Install packages
+      apt:
+        pkg:
+        - build-essential 
+        - default-jre 
+        - jq
+        - sshpass
+        state: present
 
-  roles:
-    - role: geerlingguy.java
-    - role: geerlingguy.jenkins 
+    - name: Add Jenkins repository key
+      ansible.builtin.shell: 
+        cmd: "curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null"
 
-  post_tasks:
+    - name: Add Jenkins repository to apt sources
+      ansible.builtin.shell: 
+        cmd: "echo 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/' | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null"
+
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
+
+    - name: Install packages
+      apt:
+        pkg:
+        - jenkins
+        state: present
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reexec: yes
+      become: yes
+
+    - name: Restart Jenkins service
+      systemd:
+        name: jenkins
+        state: restarted
+      become: yes
+
+    - name: Modify JAVA_OPTS in jenkins.service
+      replace:
+        path: /lib/systemd/system/jenkins.service
+        regexp: '^Environment="JAVA_OPTS=-Djava.awt.headless=true"'
+        replace: 'Environment="JAVA_OPTS=-Djava.awt.headless=true -Dcasc.jenkins.config=${JENKINS_HOME}/casc_configs -Djenkins.install.runSetupWizard=false"'
+
+    - name: Update TimeoutStartSec in jenkins.service
+      replace:
+        path: /lib/systemd/system/jenkins.service
+        regexp: '^#TimeoutStartSec=90'
+        replace: 'TimeoutStartSec=300'
+
     - name: Create dir
       ansible.builtin.file:
         path: "{{ item.path }}"
@@ -36,9 +68,10 @@
         owner: jenkins
         mode: '0755'
       loop:
-      - { path: '/var/lib/jenkins/jobs/build' , state: 'directory'}    
+      - { path: '/var/lib/jenkins/init.groovy.d' , state: 'directory'}    
       - { path: '/var/lib/jenkins/casc_configs' , state: 'directory'}   
-    
+      - { path: '/var/lib/jenkins/jobs/action' , state: 'directory'}   
+
     - name: Copy files
       ansible.builtin.copy:
         src: "{{ item.src }}"
@@ -47,16 +80,19 @@
         group: jenkins
         mode: '0644'
       loop:
-      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/casc_configs/jenkins.yaml' }
-      - { src: '/vagrant/build/config.xml', dest: '/var/lib/jenkins/jobs/build/config.xml' }
+      - { src: '/vagrant/scripts/01-admin-user.groovy', dest: '/var/lib/jenkins/init.groovy.d/01-admin-user.groovy' }
+      - { src: '/vagrant/scripts/02_plugins.groovy', dest: '/var/lib/jenkins/init.groovy.d/02_plugins.groovy' }
+      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/casc_configs/jenkins.yml' }
+      - { src: '/vagrant/config.xml', dest: '/var/lib/jenkins/jobs/action/config.xml' }
+      - { src: '/vagrant/org.jvnet.hudson.plugins.SSHBuildWrapper.xml', dest: '/var/lib/jenkins/org.jvnet.hudson.plugins.SSHBuildWrapper.xml' }
 
-    - name: Stop Jenkins service
-      ansible.builtin.service:
-        name: jenkins
-        state: stopped
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reexec: yes
+      become: yes
 
-    - name: Start Jenkins service
-      ansible.builtin.service:
+    - name: Restart Jenkins service
+      systemd:
         name: jenkins
-        state: started
-        enabled: yes
+        state: restarted
+      become: yes
