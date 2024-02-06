@@ -43,7 +43,7 @@ ls -l /tmp/</command>
     <sp.sd.nexusartifactuploader.NexusArtifactUploader plugin="nexus-artifact-uploader@2.14">
       <nexusVersion>nexus3</nexusVersion>
       <protocol>http</protocol>
-      <nexusUrl>192.168.56.3:8081</nexusUrl>
+      <nexusUrl>{{ nexus_ip }}</nexusUrl>
       <groupId>1</groupId>
       <version>$BUILD_NUMBER</version>
       <repository>dev</repository>
@@ -58,7 +58,7 @@ ls -l /tmp/</command>
       <credentialsId>08dc3a48-0fc1-411b-905f-e272bb07674e</credentialsId>
     </sp.sd.nexusartifactuploader.NexusArtifactUploader>
     <org.jvnet.hudson.plugins.SSHBuilder plugin="ssh@2.6.1">
-      <siteName>vagrant@192.168.56.61:22</siteName>
+      <siteName>vagrant@{{ stage_ip }}:22</siteName>
       <command>#!/bin/bash
 
 # Create the systemd service file
@@ -92,7 +92,7 @@ fi
 sudo service wordcloud restart
 
 # Download Word Cloud Generator binary
-sudo curl -X GET &quot;http://192.168.56.3:8081/repository/dev/1/word-cloud-generator/$BUILD_NUMBER/word-cloud-generator-$BUILD_NUMBER.gz&quot; -o /tmp/word-cloud-generator.gz -u &quot;$NEXUS_USER:$NEXUS_PASS&quot;
+sudo curl -X GET &quot;http://{{ nexus_ip }}/repository/dev/1/word-cloud-generator/$BUILD_NUMBER/word-cloud-generator-$BUILD_NUMBER.gz&quot; -o /tmp/word-cloud-generator.gz -u &quot;$NEXUS_USER:$NEXUS_PASS&quot;
 
 # List contents of /opt/wordcloud directory
 sudo ls -l /tmp
@@ -118,19 +118,19 @@ echo &quot;Wordcloud service configured and started successfully&quot;
       <hideCommand>false</hideCommand>
     </org.jvnet.hudson.plugins.SSHBuilder>
     <hudson.tasks.Shell>
-      <command>res=`curl -s -H &quot;Content-Type: application/json&quot; -d &apos;{&quot;text&quot;:&quot;ths is a really really really important thing this is&quot;}&apos; http://192.168.56.61:8888/version | jq &apos;. | length&apos;`
+      <command>res=`curl -s -H &quot;Content-Type: application/json&quot; -d &apos;{&quot;text&quot;:&quot;ths is a really really really important thing this is&quot;}&apos; http://{{ stage_ip }}:8888/version | jq &apos;. | length&apos;`
 if [ &quot;1&quot; != &quot;$res&quot; ]; then
   exit 99
 fi
 
-res=`curl -s -H &quot;Content-Type: application/json&quot; -d &apos;{&quot;text&quot;:&quot;ths is a really really really important thing this is&quot;}&apos; http://192.168.56.61:8888/api | jq &apos;. | length&apos;`
+res=`curl -s -H &quot;Content-Type: application/json&quot; -d &apos;{&quot;text&quot;:&quot;ths is a really really really important thing this is&quot;}&apos; http://{{ stage_ip }}:8888/api | jq &apos;. | length&apos;`
 if [ &quot;7&quot; != &quot;$res&quot; ]; then
   exit 99
 fi</command>
       <configuredLocalRules/>
     </hudson.tasks.Shell>
     <org.jvnet.hudson.plugins.SSHBuilder plugin="ssh@2.6.1">
-      <siteName>vagrant@192.168.56.62:22</siteName>
+      <siteName>vagrant@{{ prod_ip }}:22</siteName>
       <command>#!/bin/bash
 
 # Create the systemd service file
@@ -164,7 +164,7 @@ fi
 sudo service wordcloud restart
 
 # Download Word Cloud Generator binary
-sudo curl -X GET &quot;http://192.168.56.3:8081/repository/dev/1/word-cloud-generator/$BUILD_NUMBER/word-cloud-generator-$BUILD_NUMBER.gz&quot; -o /tmp/word-cloud-generator.gz -u &quot;$NEXUS_USER:$NEXUS_PASS&quot;
+sudo curl -X GET &quot;http://{{ nexus_ip }}/repository/dev/1/word-cloud-generator/$BUILD_NUMBER/word-cloud-generator-$BUILD_NUMBER.gz&quot; -o /tmp/word-cloud-generator.gz -u &quot;$NEXUS_USER:$NEXUS_PASS&quot;
 
 # List contents of /opt/wordcloud directory
 sudo ls -l /tmp

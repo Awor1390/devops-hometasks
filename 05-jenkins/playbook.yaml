@@ -72,6 +72,20 @@
       - { path: '/var/lib/jenkins/casc_configs' , state: 'directory'}   
       - { path: '/var/lib/jenkins/jobs/action' , state: 'directory'}   
 
+    - name: Template variables file
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      vars:
+        jenkins_ip: "{{ enkins_ip }}"
+        nexus_ip: "{{ nexus_ip }}"
+        stage_ip: "{{ stage_ip }}"
+        prod_ip: "{{ prod_ip }}"
+      loop:
+      - { src: '/vagrant/jenkins.yml.j2' , dest: '/tmp/jenkins.yml'}
+      - { src: '/vagrant/config.xml.j2' , dest: '/tmp/config.xml'}   
+      - { src: '/vagrant/org.jvnet.hudson.plugins.SSHBuildWrapper.xml.j2' , dest: '/tmp/org.jvnet.hudson.plugins.SSHBuildWrapper.xml'}   
+
     - name: Copy files
       ansible.builtin.copy:
         src: "{{ item.src }}"
@@ -82,9 +96,9 @@
       loop:
       - { src: '/vagrant/scripts/01-admin-user.groovy', dest: '/var/lib/jenkins/init.groovy.d/01-admin-user.groovy' }
       - { src: '/vagrant/scripts/02_plugins.groovy', dest: '/var/lib/jenkins/init.groovy.d/02_plugins.groovy' }
-      - { src: '/vagrant/jenkins.yml', dest: '/var/lib/jenkins/casc_configs/jenkins.yml' }
-      - { src: '/vagrant/config.xml', dest: '/var/lib/jenkins/jobs/action/config.xml' }
-      - { src: '/vagrant/org.jvnet.hudson.plugins.SSHBuildWrapper.xml', dest: '/var/lib/jenkins/org.jvnet.hudson.plugins.SSHBuildWrapper.xml' }
+      - { src: '/tmp/jenkins.yml', dest: '/var/lib/jenkins/casc_configs/jenkins.yml' }
+      - { src: '/tmp/config.xml', dest: '/var/lib/jenkins/jobs/action/config.xml' }
+      - { src: '/tmp/org.jvnet.hudson.plugins.SSHBuildWrapper.xml', dest: '/var/lib/jenkins/org.jvnet.hudson.plugins.SSHBuildWrapper.xml' }
 
     - name: Reload systemd daemon
       systemd:
