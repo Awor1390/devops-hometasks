@@ -19,22 +19,23 @@ pipeline {
             )
         }
     }
-    // stage ('Build code'){
-    //     tools {
-    //         go 'Go 1.16'
-    //     }
-    //     steps{
-    //         sh '''
-    //             echo "{ \\"version\\": \\"1.$BUILD_NUMBER\\" }" >static/version
+    stage ('Build code'){
+        tools {
+            go 'Go 1.16'
+        }
+        steps{
+            sh '''
+                echo "{ \\"version\\": \\"1.$BUILD_NUMBER\\" }" >static/version
 
-    //             GOOS=linux GOARCH=amd64 go build -o ./artifacts/word-cloud-generator -v .
+                GOOS=linux GOARCH=amd64 go build -o ./artifacts/word-cloud-generator -v .
 
-    //             md5sum artifacts/word-cloud-generator
-    //             gzip artifacts/word-cloud-generator
+                md5sum artifacts/word-cloud-generator
+                gzip artifacts/word-cloud-generator
 
-    //             ls -l artifacts/
-    //         '''
-
+                ls -l artifacts/
+            '''
+        }
+    }
     //         nexusArtifactUploader  (
     //             artifacts: [
     //                 [
