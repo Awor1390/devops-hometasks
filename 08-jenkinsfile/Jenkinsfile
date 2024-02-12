@@ -1,7 +1,7 @@
 pipeline {
-//   agent {
-//     label '!go'
-//   }
+  agent {
+    // label '!go'
+  }
   options {
       timestamps()
   }
@@ -17,7 +17,7 @@ pipeline {
                 branch: 'master',
                 changelog: false,
                 poll: false,
-                url: 'https://github.com/wickett/word-cloud-generator'
+                url: 'https://github.com/Awor1390/word-cloud-generator'
             )
         }
     }
