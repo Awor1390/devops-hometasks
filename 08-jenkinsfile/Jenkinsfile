@@ -14,7 +14,7 @@ pipeline {
         steps{
             cleanWs()
             git(
-                branch: 'master',
+                branch: 'feature/08-jenkinsfile',
                 changelog: false,
                 poll: false,
                 url: 'https://github.com/wickett/word-cloud-generator'
