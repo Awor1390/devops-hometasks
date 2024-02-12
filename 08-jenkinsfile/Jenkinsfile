@@ -21,7 +21,7 @@ pipeline {
     }
     stage ('Build code'){
         tools {
-            go 'Go 1.16'
+            go 'Go_1.16'
         }
         steps{
             sh '''
