@@ -1,7 +1,5 @@
 pipeline {
-  agent {
-    // label '!go'
-  }
+  agent any
   options {
       timestamps()
   }
