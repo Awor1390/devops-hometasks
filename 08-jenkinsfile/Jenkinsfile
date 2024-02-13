@@ -81,7 +81,7 @@ pipeline {
         steps {
             withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                 sh '''
-                    ssh-keygen -t rsa -b 4096 -C "vagrant@example.com"
+                    ssh-keygen -t rsa -b 4096 -C "vagrant@example.com"  -f "$HOME/.ssh/id_rsa" -N ""
                     ssh-copy-id vagrant@$STAGING_IP
                     ssh vagrant@$STAGING_IP "sudo systemctl stop wordcloud"
                     ssh vagrant@$STAGING_IP "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-build/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER}.gz -o /opt/wordcloud/word-cloud-generator.gz"
