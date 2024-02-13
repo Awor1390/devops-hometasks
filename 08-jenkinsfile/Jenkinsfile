@@ -10,7 +10,7 @@ pipeline {
       GIT="https://github.com/Awor1390/word-cloud-generator"
   }
   stages{
-    stage ('\u001B[32mGet git repo\u001B[0m'){
+    stage ('<b>Get git repo</b>'){
         steps{
             cleanWs()
             git(
@@ -21,7 +21,7 @@ pipeline {
             )
         }
     }
-    stage ('\u001B[32mSource checks and tests\u001B[0m'){
+    stage ('<b>Source checks and tests</b>'){
         tools {
             go 'Go_1.16'
         }
@@ -37,7 +37,7 @@ pipeline {
             }
         }
     }
-    stage ('\u001B[32mBuild code\u001B[0m'){
+    stage ('<b>Build code</b>'){
         tools {
             go 'Go_1.16'
         }
@@ -54,7 +54,7 @@ pipeline {
             '''
         }
     }
-    stage ('\u001B[32mNexus artifact upload\u001B[0m'){
+    stage ('<b>Nexus artifact upload</b>'){
         steps {
             nexusArtifactUploader  (
                 artifacts: [
