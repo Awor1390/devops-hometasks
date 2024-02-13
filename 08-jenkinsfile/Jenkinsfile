@@ -24,6 +24,15 @@ pipeline {
             go 'Go_1.16'
         }
         steps{
+            script {
+                    def lintExitCode = sh(script: 'make lint', returnStatus: true)
+                    def testExitCode = sh(script: 'make test', returnStatus: true)
+                    if ((lintExitCode != 0) || (testExitCode != 0)) {
+                         echo "FAIL CODE\n\tLINT=${lintExitCode}\n\tTEST=${testExitCode}"
+                    } else {
+                        echo "LINT && TEST CHECKS OK"
+                    }
+            }
             sh '''
                 echo "CHECK CODE ERRORS BEFORE COMPAILE"
                 make lint
