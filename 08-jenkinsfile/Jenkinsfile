@@ -10,7 +10,7 @@ pipeline {
       GIT="https://github.com/Awor1390/word-cloud-generator"
   }
   stages{
-    stage ('Get git repo'){
+    stage ('\u001B[32mGet git repo\u001B[0m'){
         steps{
             cleanWs()
             git(
@@ -21,7 +21,7 @@ pipeline {
             )
         }
     }
-    stage ('Source checks and tests'){
+    stage ('\u001B[32mSource checks and tests\u001B[0m'){
         tools {
             go 'Go_1.16'
         }
@@ -30,14 +30,14 @@ pipeline {
                     def lintExitCode = sh(script: 'make lint', returnStatus: true)
                     def testExitCode = sh(script: 'make test', returnStatus: true)
                     if ((lintExitCode != 0) || (testExitCode != 0)) {
-                         echo "FAIL CODE\n\tLINT=${lintExitCode}\n\tTEST=${testExitCode}"
+                        echo "FAIL CODE\n\tLINT=${lintExitCode}\n\tTEST=${testExitCode}"
                     } else {
                         echo "LINT && TEST CHECKS OK"
                     }
             }
         }
     }
-    stage ('Build code'){
+    stage ('\u001B[32mBuild code\u001B[0m'){
         tools {
             go 'Go_1.16'
         }
@@ -54,7 +54,7 @@ pipeline {
             '''
         }
     }
-    stage ('Nexus artifact upload'){
+    stage ('\u001B[32mNexus artifact upload\u001B[0m'){
         steps {
             nexusArtifactUploader  (
                 artifacts: [
