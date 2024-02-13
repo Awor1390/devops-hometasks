@@ -4,8 +4,10 @@ pipeline {
       timestamps()
   }
   environment {
-      NEXUS_IP="192.168.56.90"
-      STAGING_IP="192.168.56.80"
+      NEXUS_IP="192.168.59.90"
+      STAGING_IP="192.168.59.80"
+      PRODACT_IP="192.168.59.85"
+      GIT="https://github.com/Awor1390/word-cloud-generator"
   }
   stages{
     stage ('Get git repo'){
@@ -15,7 +17,7 @@ pipeline {
                 branch: 'master',
                 changelog: false,
                 poll: false,
-                url: 'https://github.com/Awor1390/word-cloud-generator'
+                url: "$GIT"
             )
         }
     }
