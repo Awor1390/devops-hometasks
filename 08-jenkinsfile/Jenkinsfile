@@ -19,7 +19,7 @@ pipeline {
             )
         }
     }
-    stage ('Build code'){
+    stage ('Source checks and tests'){
         tools {
             go 'Go_1.16'
         }
@@ -33,10 +33,14 @@ pipeline {
                         echo "LINT && TEST CHECKS OK"
                     }
             }
+        }
+    }
+    stage ('Build code'){
+        tools {
+            go 'Go_1.16'
+        }
+        steps{
             sh '''
-                echo "CHECK CODE ERRORS BEFORE COMPAILE"
-                make lint
-
                 echo "{ \\"version\\": \\"1.$BUILD_NUMBER\\" }" >static/version
 
                 GOOS=linux GOARCH=amd64 go build -o ./artifacts/word-cloud-generator -v .
@@ -45,30 +49,31 @@ pipeline {
                 gzip artifacts/word-cloud-generator
 
                 ls -l artifacts/
-
-
             '''
         }
     }
-    //         nexusArtifactUploader  (
-    //             artifacts: [
-    //                 [
-    //                     artifactId: 'word-cloud-generator', 
-    //                     classifier: '', 
-    //                     file: 'artifacts/word-cloud-generator.gz', 
-    //                     type: 'gz'
-    //                 ]
-    //             ], 
-    //             credentialsId: '9c9a1eb1-f51d-4292-a4f6-a74c3f18b9e8', 
-    //             groupId: '1', 
-    //             nexusUrl: "$NEXUS_IP:8081/", 
-    //             nexusVersion: 'nexus3', 
-    //             protocol: 'http', 
-    //             repository: 'word-cloud-build', 
-    //             version: '$BUILD_NUMBER'
-    //         )
-    //     }
-    // }
+    stage ('Nexus artifact upload'){
+        steps {
+            nexusArtifactUploader  (
+                artifacts: [
+                    [
+                        artifactId: 'word-cloud-generator', 
+                        classifier: '', 
+                        file: 'artifacts/word-cloud-generator.gz', 
+                        type: 'gz'
+                    ]
+                ], 
+                credentialsId: 'nexus-creds', 
+                groupId: '1', 
+                nexusUrl: "$NEXUS_IP:8081/", 
+                nexusVersion: 'nexus3', 
+                protocol: 'http', 
+                repository: 'word-cloud-build', 
+                version: '$BUILD_NUMBER'
+            )
+        }
+    }
+    
     // stage('Deploy to Staging') {
     //     steps {
     //         withCredentials([usernamePassword(credentialsId: '9c9a1eb1-f51d-4292-a4f6-a74c3f18b9e8', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
