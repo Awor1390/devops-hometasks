@@ -8,11 +8,9 @@ pipeline {
       STAGING_IP="192.168.59.80"
       PRODACT_IP="192.168.59.85"
       GIT="https://github.com/Awor1390/word-cloud-generator"
-      NEXUS_DOWNLOAD_PASSWORD="dev"
-      NEXUS_DOWNLOAD_USER="dev"
   }
   stages{
-    stage ('Get git repo'){
+    stage ('<b>Get git repo</b>'){
         steps{
             cleanWs()
             git(
@@ -23,7 +21,7 @@ pipeline {
             )
         }
     }
-    stage ('Source checks and tests'){
+    stage ('<b>Source checks and tests</b>'){
         tools {
             go 'Go_1.16'
         }
@@ -39,7 +37,7 @@ pipeline {
             }
         }
     }
-    stage ('Build code'){
+    stage ('<b>Build code</b>'){
         tools {
             go 'Go_1.16'
         }
@@ -56,7 +54,7 @@ pipeline {
             '''
         }
     }
-    stage ('Nexus artifact upload'){
+    stage ('<b>Nexus artifact upload</b>'){
         steps {
             nexusArtifactUploader  (
                 artifacts: [
@@ -80,7 +78,7 @@ pipeline {
     
     stage('Deploy to Staging') {
         steps {
-            withCredentials([usernamePassword(credentialsId: '9c9a1eb1-f51d-4292-a4f6-a74c3f18b9e8', passwordVariable: "$NEXUS_DOWNLOAD_PASSWORD", usernameVariable: "$NEXUS_DOWNLOAD_USER")]) {
+            withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                 sh '''
                     ssh vagrant@$STAGING_IP "sudo systemctl stop wordcloud"
                     ssh vagrant@$STAGING_IP "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-build/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER}.gz -o /opt/wordcloud/word-cloud-generator.gz"
