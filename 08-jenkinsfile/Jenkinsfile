@@ -8,9 +8,11 @@ pipeline {
       STAGING_IP="192.168.59.80"
       PRODACT_IP="192.168.59.85"
       GIT="https://github.com/Awor1390/word-cloud-generator"
+      NEXUS_DOWNLOAD_PASSWORD="dev"
+      NEXUS_DOWNLOAD_USER="dev"
   }
   stages{
-    stage ('<b>Get git repo</b>'){
+    stage ('Get git repo'){
         steps{
             cleanWs()
             git(
@@ -21,7 +23,7 @@ pipeline {
             )
         }
     }
-    stage ('<b>Source checks and tests</b>'){
+    stage ('Source checks and tests'){
         tools {
             go 'Go_1.16'
         }
@@ -37,7 +39,7 @@ pipeline {
             }
         }
     }
-    stage ('<b>Build code</b>'){
+    stage ('Build code'){
         tools {
             go 'Go_1.16'
         }
@@ -54,7 +56,7 @@ pipeline {
             '''
         }
     }
-    stage ('<b>Nexus artifact upload</b>'){
+    stage ('Nexus artifact upload'){
         steps {
             nexusArtifactUploader  (
                 artifacts: [
@@ -76,18 +78,18 @@ pipeline {
         }
     }
     
-    // stage('Deploy to Staging') {
-    //     steps {
-    //         withCredentials([usernamePassword(credentialsId: '9c9a1eb1-f51d-4292-a4f6-a74c3f18b9e8', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
-    //             sh '''
-    //                 ssh vagrant@$STAGING_IP "sudo systemctl stop wordcloud"
-    //                 ssh vagrant@$STAGING_IP "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-build/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER}.gz -o /opt/wordcloud/word-cloud-generator.gz"
-    //                 ssh vagrant@$STAGING_IP "gunzip -f /opt/wordcloud/word-cloud-generator.gz"
-    //                 ssh vagrant@$STAGING_IP "chmod +x /opt/wordcloud/word-cloud-generator"
-    //                 ssh vagrant@$STAGING_IP "sudo systemctl start wordcloud"
-    //             '''
-    //         }
-    //     }
-    // }
+    stage('Deploy to Staging') {
+        steps {
+            withCredentials([usernamePassword(credentialsId: '9c9a1eb1-f51d-4292-a4f6-a74c3f18b9e8', passwordVariable: "$NEXUS_DOWNLOAD_PASSWORD", usernameVariable: "$NEXUS_DOWNLOAD_USER")]) {
+                sh '''
+                    ssh vagrant@$STAGING_IP "sudo systemctl stop wordcloud"
+                    ssh vagrant@$STAGING_IP "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-build/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER}.gz -o /opt/wordcloud/word-cloud-generator.gz"
+                    ssh vagrant@$STAGING_IP "gunzip -f /opt/wordcloud/word-cloud-generator.gz"
+                    ssh vagrant@$STAGING_IP "chmod +x /opt/wordcloud/word-cloud-generator"
+                    ssh vagrant@$STAGING_IP "sudo systemctl start wordcloud"
+                '''
+            }
+        }
+    }
   }
 }
