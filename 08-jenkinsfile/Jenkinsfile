@@ -10,6 +10,7 @@ pipeline {
       GIT="https://github.com/Awor1390/word-cloud-generator"
       SSH_PASSWORD=vagrant
       SSH_USER=vagrant
+      SSH_CRED="sshpass -p "$SSH_PASSWORD" ssh $SSH_USER@$STAGING_IP"
   }
   stages{
     stage ('Get git repo'){
@@ -79,9 +80,6 @@ pipeline {
     }
     
     stage('Deploy to Staging') {
-        environment {
-            SSH_CRED="sshpass -p "$SSH_PASSWORD" ssh $SSH_USER@$STAGING_IP"
-        }
         steps {
             withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                 sh '''
