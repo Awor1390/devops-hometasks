@@ -101,11 +101,13 @@ pipeline {
                     steps {
                         sh '''
                             res=`curl -s -H "Content-Type: application/json" -d '{"text":"ths is a really really really important thing this is"}' http://$STAGING_IP:8888/version | jq '. | length'`
+                            echo "$res"
                             if [ "1" != "$res" ]; then
                             exit 99
                             fi
 
                             res=`curl -s -H "Content-Type: application/json" -d '{"text":"ths is a really really really important thing this is"}' http://$STAGING_IP:8888/api | jq '. | length'`
+                            echo "$res"
                             if [ "7" != "$res" ]; then
                             exit 99
                             fi
@@ -116,11 +118,13 @@ pipeline {
                     steps {
                         sh '''
                             res=`curl -s -H "Content-Type: application/json" -d '{"text":"ths is a really really really important thing this is"}' http://$STAGING_IP:8888/version | jq '. | length'`
+                            echo "$res"
                             if [ "1" != "$res" ]; then
                             exit 99
                             fi
 
                             res=`curl -s -H "Content-Type: application/json" -d '{"text":"ths is a really really really important thing this is"}' http://$STAGING_IP:8888/api | jq '. | length'`
+                            echo "$res"
                             if [ "7" != "$res" ]; then
                             exit 99
                             fi
@@ -133,12 +137,13 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                     sh '''
-                        $SSH_CRED_PRODT "sudo mkdir -p /opt/word-cloud-generator"
-                        $SSH_CRED_PRODT "sudo rm -rf /opt/word-cloud-generator/*"
-                        $SSH_CRED_PRODT "sudo chown -R vagrant:vagrant /opt/word-cloud-generator"
-                        $SSH_CRED_PRODT "sudo chmod -R 755 /opt/word-cloud-generator"
-                        $SSH_CRED_PRODT "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER} -o /opt/word-cloud-generator/word-cloud-generator"
-                        $SSH_CRED_PRODT "sudo chmod +x /opt/word-cloud-generator/word-cloud-generator"
+                        wcg="word-cloud-generator"
+                        $SSH_CRED_PRODT "sudo mkdir -p /opt/$wcg"
+                        $SSH_CRED_PRODT "sudo rm -rf /opt/$wcg/*"
+                        $SSH_CRED_PRODT "sudo chown -R vagrant:vagrant /opt/$wcg"
+                        $SSH_CRED_PRODT "sudo chmod -R 755 /opt/$wcg"
+                        $SSH_CRED_PRODT "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/$wcg/${BUILD_NUMBER}/$wcg-${BUILD_NUMBER} -o /opt/$wcg/$wcg"
+                        $SSH_CRED_PRODT "sudo chmod +x /opt/$wcg/$wcg"
                         $SSH_CRED_PRODT "sudo systemctl stop wordcloud"
                         $SSH_CRED_PRODT "sudo systemctl start wordcloud"
                     '''
