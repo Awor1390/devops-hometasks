@@ -81,7 +81,7 @@ pipeline {
         steps {
             withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                 sh '''
-                    sudo su - jenkins
+                    
                     ssh-keygen -t rsa -b 4096 -C "vagrant@example.com"  -f "$HOME/.ssh/id_rsa" -N ""
                     ssh-copy-id vagrant@$STAGING_IP
                     ssh vagrant@$STAGING_IP "sudo systemctl stop wordcloud"
