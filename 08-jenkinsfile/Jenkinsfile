@@ -52,7 +52,7 @@ pipeline {
                 GOOS=linux GOARCH=amd64 go build -o ./artifacts/word-cloud-generator -v .
 
                 md5sum artifacts/word-cloud-generator
-                gzip artifacts/word-cloud-generator
+                // gzip artifacts/word-cloud-generator
 
                 ls -l artifacts/
             '''
@@ -65,8 +65,8 @@ pipeline {
                     [
                         artifactId: 'word-cloud-generator', 
                         classifier: '', 
-                        file: 'artifacts/word-cloud-generator.gz', 
-                        type: 'gz'
+                        file: 'artifacts/word-cloud-generator', 
+                    
                     ]
                 ], 
                 credentialsId: 'nexus-creds', 
@@ -88,9 +88,9 @@ pipeline {
                     $SSH_CRED_STAGE "sudo chown -R vagrant:vagrant /opt/wordcloud"
                     $SSH_CRED_STAGE "sudo chmod -R 755 /opt/wordcloud"
 
-                    $SSH_CRED_STAGE  "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-build/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER}.gz -o /opt/wordcloud/word-cloud-generator.gz"
-                     $SSH_CRED_STAGE "sudo chmod +x /opt/wordcloud/word-cloud-generator.gz"
-                    $SSH_CRED_STAGE  "gunzip -f /opt/wordcloud/word-cloud-generator.gz"
+                    $SSH_CRED_STAGE  "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-build/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER} -o /opt/wordcloud/word-cloud-generator"
+                    //  $SSH_CRED_STAGE "sudo chmod +x /opt/wordcloud/word-cloud-generator.gz"
+                    // $SSH_CRED_STAGE  "gunzip -f /opt/wordcloud/word-cloud-generator.gz"
                     $SSH_CRED_STAGE  "sudo chmod +x /opt/wordcloud/word-cloud-generator"
 
                     $SSH_CRED_STAGE  "sudo systemctl stop wordcloud"
