@@ -84,12 +84,13 @@ pipeline {
             withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                 sh '''
                     $SSH_CRED_STAGE "sudo mkdir -p /opt/word-cloud-generator"
+                    $SSH_CRED_STAGE "sudo rm -rf /opt/word-cloud-generator/*"
                     $SSH_CRED_STAGE "sudo chown -R vagrant:vagrant /opt/word-cloud-generator"
                     $SSH_CRED_STAGE "sudo chmod -R 755 /opt/word-cloud-generator"
-                    $SSH_CRED_STAGE  "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER} -o /opt/word-cloud-generator/word-cloud-generator"
-                    $SSH_CRED_STAGE  "sudo chmod +x /opt/word-cloud-generator/word-cloud-generator"
-                    $SSH_CRED_STAGE  "sudo systemctl stop wordcloud"
-                    $SSH_CRED_STAGE  "sudo systemctl start wordcloud"
+                    $SSH_CRED_STAGE "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER} -o /opt/word-cloud-generator/word-cloud-generator"
+                    $SSH_CRED_STAGE "sudo chmod +x /opt/word-cloud-generator/word-cloud-generator"
+                    $SSH_CRED_STAGE "sudo systemctl stop wordcloud"
+                    $SSH_CRED_STAGE "sudo systemctl start wordcloud"
                 '''
             }
         }
