@@ -8,8 +8,8 @@ pipeline {
       STAGING_IP="192.168.59.80"
       PRODACT_IP="192.168.59.85"
       GIT="https://github.com/Awor1390/word-cloud-generator"
-      SSH_PASSWORD=vagrant
-      SSH_USER=vagrant
+      SSH_PASSWORD="vagrant"
+      SSH_USER="vagrant"
       SSH_CRED="sshpass -p "$SSH_PASSWORD" ssh $SSH_USER@$STAGING_IP"
   }
   stages{
