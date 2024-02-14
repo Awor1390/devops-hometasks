@@ -85,7 +85,7 @@ pipeline {
                 sh '''
                     sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80 "sudo mkdir -p /opt/wordcloud"
                     sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80 "sudo chown -R vagrant:vagrant /opt/wordcloud"
-                    sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80 "sudo chmod -R 755 /opt/wordcloud""
+                    sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80 "sudo chmod -R 755 /opt/wordcloud"
          
                     sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80  "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-build/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER}.gz -o /opt/wordcloud/word-cloud-generator.gz"
                     sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80  "gunzip -f /opt/wordcloud/word-cloud-generator.gz"
