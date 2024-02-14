@@ -81,8 +81,8 @@ pipeline {
         steps {
             withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                 sh '''
-                    if [ ! -f "$HOME/.ssh/id_rsa_my" ]; then
-                        ssh-keygen -t rsa -b 4096 -C "vagrant@example.com"  -f "$HOME/.ssh/id_rsa_my" -N ""
+                    if [ ! -f "$HOME/.ssh/id_rsa_my_key1" ]; then
+                        ssh-keygen -t rsa -b 4096 -C "key1_vagrant@example.com"  -f "$HOME/.ssh/id_rsa_my_key1" -N ""
                     fi
 
                     ssh-copy-id vagrant@$STAGING_IP
