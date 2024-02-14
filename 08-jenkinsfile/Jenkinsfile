@@ -14,7 +14,7 @@ pipeline {
         SSH_CRED_PRODT="sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$PRODACT_IP"
     }
     stages{
-        stage ('Get git repo'){SSH_CRED_STAGE
+        stage ('Get git repo'){
             steps{
                 cleanWs()
                 git(
