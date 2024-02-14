@@ -4,10 +4,11 @@ pipeline {
         timestamps()
     }
     environment {
+        wcg="word-cloud-generator"
         NEXUS_IP="192.168.59.90"
         STAGING_IP="192.168.59.80"
         PRODACT_IP="192.168.59.85"
-        GIT="https://github.com/Awor1390/word-cloud-generator"
+        GIT="https://github.com/Awor1390/$wcg"
         SSH_PASSWORD="vagrant"
         SSH_USER="vagrant"
         SSH_CRED_STAGE="sshpass -p $SSH_PASSWORD ssh -o StrictHostKeyChecking=no $SSH_USER@$STAGING_IP"
@@ -83,12 +84,12 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                     sh '''
-                        $SSH_CRED_STAGE "sudo mkdir -p /opt/word-cloud-generator"
-                        $SSH_CRED_STAGE "sudo rm -rf /opt/word-cloud-generator/*"
-                        $SSH_CRED_STAGE "sudo chown -R vagrant:vagrant /opt/word-cloud-generator"
-                        $SSH_CRED_STAGE "sudo chmod -R 755 /opt/word-cloud-generator"
-                        $SSH_CRED_STAGE "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER} -o /opt/word-cloud-generator/word-cloud-generator"
-                        $SSH_CRED_STAGE "sudo chmod +x /opt/word-cloud-generator/word-cloud-generator"
+                        $SSH_CRED_STAGE "sudo mkdir -p /opt/$wcg"
+                        $SSH_CRED_STAGE "sudo rm -rf /opt/$wcg/*"
+                        $SSH_CRED_STAGE "sudo chown -R vagrant:vagrant /opt/$wcg"
+                        $SSH_CRED_STAGE "sudo chmod -R 755 /opt/$wcg"
+                        $SSH_CRED_STAGE "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/$wcg/${BUILD_NUMBER}/$wcg-${BUILD_NUMBER} -o /opt/$wcg/$wcg"
+                        $SSH_CRED_STAGE "sudo chmod +x /opt/$wcg/$wcg"
                         $SSH_CRED_STAGE "sudo systemctl stop wordcloud"
                         $SSH_CRED_STAGE "sudo systemctl start wordcloud"
                     '''
@@ -137,7 +138,6 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                     sh '''
-                        wcg="word-cloud-generator"
                         $SSH_CRED_PRODT "sudo mkdir -p /opt/$wcg"
                         $SSH_CRED_PRODT "sudo rm -rf /opt/$wcg/*"
                         $SSH_CRED_PRODT "sudo chown -R vagrant:vagrant /opt/$wcg"
