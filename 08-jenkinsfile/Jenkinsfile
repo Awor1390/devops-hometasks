@@ -10,7 +10,8 @@ pipeline {
       GIT="https://github.com/Awor1390/word-cloud-generator"
       SSH_PASSWORD="vagrant"
       SSH_USER="vagrant"
-      SSH_CRED="sshpass -p $SSH_PASSWORD ssh $SSH_USER@$STAGING_IP"
+      SSH_CRED_STAGE="sshpass -p '$SSH_PASSWORD' ssh -o StrictHostKeyChecking=no $SSH_USER@$STAGING_IP"
+      SSH_CRED_PRODT="sshpass -p '$SSH_PASSWORD' ssh -o StrictHostKeyChecking=no $SSH_USER@$PRODACT_IP"
   }
   stages{
     stage ('Get git repo'){
@@ -83,16 +84,17 @@ pipeline {
         steps {
             withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                 sh '''
-                    sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80 "sudo mkdir -p /opt/wordcloud"
-                    sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80 "sudo chown -R vagrant:vagrant /opt/wordcloud"
-                    sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80 "sudo chmod -R 755 /opt/wordcloud"
-         
-                    sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80  "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-build/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER}.gz -o /opt/wordcloud/word-cloud-generator.gz"
-                    sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80  "gunzip -f /opt/wordcloud/word-cloud-generator.gz"
-                    sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80  "chmod +x /opt/wordcloud/word-cloud-generator"
+                    $SSH_CRED_STAGE "sudo mkdir -p /opt/wordcloud"
+                    $SSH_CRED_STAGE "sudo chown -R vagrant:vagrant /opt/wordcloud"
+                    $SSH_CRED_STAGE "sudo chmod -R 755 /opt/wordcloud"
+                    $SSH_CRED_STAGE "chmod +x /opt/wordcloud/word-cloud-generator".gz
 
-                    sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80  "sudo systemctl stop wordcloud"
-                    sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@192.168.59.80  "sudo systemctl start wordcloud"
+                    $SSH_CRED_STAGE  "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-build/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER}.gz -o /opt/wordcloud/word-cloud-generator.gz"
+                    $SSH_CRED_STAGE  "gunzip -f /opt/wordcloud/word-cloud-generator.gz"
+                    $SSH_CRED_STAGE  "chmod +x /opt/wordcloud/word-cloud-generator"
+
+                    $SSH_CRED_STAGE  "sudo systemctl stop wordcloud"
+                    $SSH_CRED_STAGE  "sudo systemctl start wordcloud"
                 '''
             }
         }
