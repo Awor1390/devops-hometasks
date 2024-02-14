@@ -79,7 +79,6 @@ pipeline {
             )
         }
     }
-    
     stage('Deploy to Staging') {
         steps {
             withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
@@ -87,16 +86,47 @@ pipeline {
                     $SSH_CRED_STAGE "sudo mkdir -p /opt/word-cloud-generator"
                     $SSH_CRED_STAGE "sudo chown -R vagrant:vagrant /opt/word-cloud-generator"
                     $SSH_CRED_STAGE "sudo chmod -R 755 /opt/word-cloud-generator"
-
                     $SSH_CRED_STAGE  "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/word-cloud-generator/${BUILD_NUMBER}/word-cloud-generator-${BUILD_NUMBER} -o /opt/word-cloud-generator/word-cloud-generator"
-                   
                     $SSH_CRED_STAGE  "sudo chmod +x /opt/word-cloud-generator/word-cloud-generator"
-
                     $SSH_CRED_STAGE  "sudo systemctl stop wordcloud"
                     $SSH_CRED_STAGE  "sudo systemctl start wordcloud"
                 '''
             }
         }
+    }
+    stage('Parallel integration tests') {
+    parallel {
+        stage('Stage A') {
+            steps {
+                sh '''
+                    res=`curl -s -H "Content-Type: application/json" -d '{"text":"ths is a really really really important thing this is"}' http://$STAGING_IP:8888/version | jq '. | length'`
+                    if [ "1" != "$res" ]; then
+                    exit 99
+                    fi
+
+                    res=`curl -s -H "Content-Type: application/json" -d '{"text":"ths is a really really really important thing this is"}' http://$STAGING_IP:8888/api | jq '. | length'`
+                    if [ "7" != "$res" ]; then
+                    exit 99
+                    fi
+                '''
+            }
+        }
+        stage('Stage B') {
+            steps {
+                sh '''
+                    res=`curl -s -H "Content-Type: application/json" -d '{"text":"ths is a really really really important thing this is"}' http://$STAGING_IP:8888/version | jq '. | length'`
+                    if [ "1" != "$res" ]; then
+                    exit 99
+                    fi
+
+                    res=`curl -s -H "Content-Type: application/json" -d '{"text":"ths is a really really really important thing this is"}' http://$STAGING_IP:8888/api | jq '. | length'`
+                    if [ "7" != "$res" ]; then
+                    exit 99
+                    fi
+                '''
+            }
+        }
+    }
     }
 }
 }
