@@ -8,6 +8,22 @@ ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 
 RUN jenkins-plugin-cli \
     --plugins \
-    git 
+    git \
+    timestamper \
+    credentials \
+    credentials-binding \
+    workflow-basic-steps \
+    workflow-cps \
+    workflow-multibranch \
+    pipeline-build-step \
+    pipeline-input-step \ 
+    pipeline-milestone-step \
+    pipeline-stage-step \
+    pipeline-model-definition \
+    configuration-as-code \
+    golang \
+    nexus-artifact-uploader \
+    ssh \
+    ws-cleanup
 
 # RUN /usr/local/bin/install-plugins.sh git
