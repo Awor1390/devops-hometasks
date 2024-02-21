@@ -84,12 +84,11 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                     sh '''
-                        $SSH_CRED_STAGE "sudo mkdir -p /opt/$wcg"
-                        $SSH_CRED_STAGE "sudo rm -rf /opt/$wcg/*"
-                        $SSH_CRED_STAGE "sudo chown -R vagrant:vagrant /opt/$wcg"
-                        $SSH_CRED_STAGE "sudo chmod -R 755 /opt/$wcg"
-                        $SSH_CRED_STAGE "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/$wcg/${BUILD_NUMBER}/$wcg-${BUILD_NUMBER} -o /opt/$wcg/$wcg"
-                        $SSH_CRED_STAGE "sudo chmod +x /opt/$wcg/$wcg"
+                        $SSH_CRED_STAGE "sudo rm -rf /opt/*"
+                        $SSH_CRED_STAGE "sudo chown -R vagrant:vagrant /opt"
+                        $SSH_CRED_STAGE "sudo chmod -R 755 /opt"
+                        $SSH_CRED_STAGE "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/$wcg/${BUILD_NUMBER}/$wcg-${BUILD_NUMBER} -o /opt/$wcg"
+                        $SSH_CRED_STAGE "sudo chmod +x /opt/$wcg"
                         $SSH_CRED_STAGE "sudo systemctl stop wordcloud"
                         $SSH_CRED_STAGE "sudo systemctl start wordcloud"
                     '''
@@ -138,14 +137,13 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'nexus-creds', passwordVariable: 'NEXUS_DOWNLOAD_PASSWORD', usernameVariable: 'NEXUS_DOWNLOAD_USER')]) {
                     sh '''
-                        $SSH_CRED_PRODT "sudo mkdir -p /opt/$wcg"
-                        $SSH_CRED_PRODT "sudo rm -rf /opt/$wcg/*"
-                        $SSH_CRED_PRODT "sudo chown -R vagrant:vagrant /opt/$wcg"
-                        $SSH_CRED_PRODT "sudo chmod -R 755 /opt/$wcg"
-                        $SSH_CRED_PRODT "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/$wcg/${BUILD_NUMBER}/$wcg-${BUILD_NUMBER} -o /opt/$wcg/$wcg"
-                        $SSH_CRED_PRODT "sudo chmod +x /opt/$wcg/$wcg"
-                        $SSH_CRED_PRODT "sudo systemctl stop wordcloud"
-                        $SSH_CRED_PRODT "sudo systemctl start wordcloud"
+                        $SSH_CRED_STAGE "sudo rm -rf /opt/*"
+                        $SSH_CRED_STAGE "sudo chown -R vagrant:vagrant /opt"
+                        $SSH_CRED_STAGE "sudo chmod -R 755 /opt"
+                        $SSH_CRED_STAGE "curl -X GET -u $NEXUS_DOWNLOAD_USER:$NEXUS_DOWNLOAD_PASSWORD http://$NEXUS_IP:8081/repository/word-cloud-app/1/$wcg/${BUILD_NUMBER}/$wcg-${BUILD_NUMBER} -o /opt/$wcg"
+                        $SSH_CRED_STAGE "sudo chmod +x /opt/$wcg"
+                        $SSH_CRED_STAGE "sudo systemctl stop wordcloud"
+                        $SSH_CRED_STAGE "sudo systemctl start wordcloud"
                     '''
                 }
             }
