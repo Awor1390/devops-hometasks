@@ -5,7 +5,7 @@ LABEL maintainer="pwd1390@mail.ru"
 USER root
 # RUN chown -R jenkins:jenkins /var/jenkins_home
 
-ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Dcasc.jenkins.config=/var/jenkins_home"
 
 RUN jenkins-plugin-cli \
     --plugins \
@@ -32,3 +32,5 @@ RUN mkdir -p /var/jenkins_home/jobs/action && chmod -R 755 /var/jenkins_home/job
 ADD ./files/config.xml /var/jenkins_home/jobs/action/config.xml
 
 ADD ./files/init.groovy /var/jenkins_home/init.groovy
+
+ADD ./files/jenkins.yml /var/jenkins_home/jenkins.yml
