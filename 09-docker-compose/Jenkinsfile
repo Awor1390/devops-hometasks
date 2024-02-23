@@ -64,9 +64,9 @@ pipeline {
                         
                         ]
                     ], 
-                    credentialsId: 'nexus-cred', 
+                    credentialsId: 'nexus-creds', 
                     groupId: '1', 
-                    nexusUrl: "$NEXUS_IP:8081/", 
+                    nexusUrl: "$NEXUS_IP:8081", 
                     nexusVersion: 'nexus3', 
                     protocol: 'http', 
                     repository: 'dev', 
