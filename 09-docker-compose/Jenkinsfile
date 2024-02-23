@@ -22,7 +22,7 @@ pipeline {
         }
         stage ('Source checks and tests'){
             tools {
-                go 'Go_1.4'
+                go '1.4'
             }
             steps{
                 script {
@@ -38,7 +38,7 @@ pipeline {
         }
         stage ('Build code'){
             tools {
-                go 'Go_1.4'
+                go '1.4'
             }
             steps{
                 sh '''
