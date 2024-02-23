@@ -5,7 +5,7 @@ pipeline {
     }
     environment {
         wcg="word-cloud-generator"
-        NEXUS_IP="192.168.59.90"
+        NEXUS_IP="localhost"
         GIT="https://github.com/Awor1390/$wcg"
     }
     stages{
@@ -53,26 +53,26 @@ pipeline {
                 '''
             }
         }
-        // stage ('Nexus artifact upload'){
-        //     steps {
-        //         nexusArtifactUploader  (
-        //             artifacts: [
-        //                 [
-        //                     artifactId: 'word-cloud-generator', 
-        //                     classifier: '', 
-        //                     file: 'artifacts/word-cloud-generator', 
+        stage ('Nexus artifact upload'){
+            steps {
+                nexusArtifactUploader  (
+                    artifacts: [
+                        [
+                            artifactId: 'word-cloud-generator', 
+                            classifier: '', 
+                            file: 'artifacts/word-cloud-generator', 
                         
-        //                 ]
-        //             ], 
-        //             credentialsId: 'nexus-creds', 
-        //             groupId: '1', 
-        //             nexusUrl: "$NEXUS_IP:8081/", 
-        //             nexusVersion: 'nexus3', 
-        //             protocol: 'http', 
-        //             repository: 'word-cloud-app', 
-        //             version: '$BUILD_NUMBER'
-        //         )
-        //     }
-        // }   
+                        ]
+                    ], 
+                    credentialsId: 'nexus-creds', 
+                    groupId: '1', 
+                    nexusUrl: "$NEXUS_IP:8081/", 
+                    nexusVersion: 'nexus3', 
+                    protocol: 'http', 
+                    repository: 'dev', 
+                    version: '$BUILD_NUMBER'
+                )
+            }
+        }   
     }
 }
