@@ -3,6 +3,7 @@ FROM jenkins/jenkins:latest
 LABEL maintainer="pwd1390@mail.ru"
 
 USER root
+# RUN chown -R jenkins:jenkins /var/jenkins_home
 
 ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
 
@@ -26,4 +27,8 @@ RUN jenkins-plugin-cli \
     ssh \
     ws-cleanup
 
-# RUN /usr/local/bin/install-plugins.sh git
+RUN mkdir -p /var/jenkins_home/jobs/action && chmod -R 755 /var/jenkins_home/jobs/action
+
+ADD ./files/config.xml /var/jenkins_home/jobs/action/config.xml
+
+ADD ./files/init.groovy /var/jenkins_home/init.groovy

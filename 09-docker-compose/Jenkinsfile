@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+    options {
+        timestamps()
+    }
+    environment {
+        wcg="word-cloud-generator"
+        NEXUS_IP="192.168.59.90"
+        GIT="https://github.com/Awor1390/$wcg"
+    }
+    stages{
+        stage ('Get git repo'){
+            steps{
+                cleanWs()
+                git(
+                    branch: 'master',
+                    changelog: false,
+                    poll: false,
+                    url: "$GIT"
+                )
+            }
+        }
+        stage ('Source checks and tests'){
+            tools {
+                go 'Go_1.16'
+            }
+            steps{
+                script {
+                        def lintExitCode = sh(script: 'make lint', returnStatus: true)
+                        def testExitCode = sh(script: 'make test', returnStatus: true)
+                        if ((lintExitCode != 0) || (testExitCode != 0)) {
+                            echo "FAIL CODE\n\tLINT=${lintExitCode}\n\tTEST=${testExitCode}"
+                        } else {
+                            echo "LINT && TEST CHECKS OK"
+                        }
+                }
+            }
+        }
+        stage ('Build code'){
+            tools {
+                go 'Go_1.16'
+            }
+            steps{
+                sh '''
+                    echo "{ \\"version\\": \\"1.$BUILD_NUMBER\\" }" >static/version
+
+                    GOOS=linux GOARCH=amd64 go build -o ./artifacts/word-cloud-generator -v .
+
+                    md5sum artifacts/word-cloud-generator
+                    
+
+                    ls -l artifacts/
+                '''
+            }
+        }
+        // stage ('Nexus artifact upload'){
+        //     steps {
+        //         nexusArtifactUploader  (
+        //             artifacts: [
+        //                 [
+        //                     artifactId: 'word-cloud-generator', 
+        //                     classifier: '', 
+        //                     file: 'artifacts/word-cloud-generator', 
+                        
+        //                 ]
+        //             ], 
+        //             credentialsId: 'nexus-creds', 
+        //             groupId: '1', 
+        //             nexusUrl: "$NEXUS_IP:8081/", 
+        //             nexusVersion: 'nexus3', 
+        //             protocol: 'http', 
+        //             repository: 'word-cloud-app', 
+        //             version: '$BUILD_NUMBER'
+        //         )
+        //     }
+        // }   
+    }
+}
