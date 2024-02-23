@@ -22,7 +22,7 @@ pipeline {
         }
         stage ('Source checks and tests'){
             tools {
-                go 'Go_1.16'
+                go 'Go_1.4'
             }
             steps{
                 script {
