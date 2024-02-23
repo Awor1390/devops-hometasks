@@ -64,7 +64,7 @@ pipeline {
                         
                         ]
                     ], 
-                    credentialsId: 'nexus-creds', 
+                    credentialsId: 'nexus-cred', 
                     groupId: '1', 
                     nexusUrl: "$NEXUS_IP:8081/", 
                     nexusVersion: 'nexus3', 
