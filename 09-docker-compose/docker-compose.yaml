@@ -2,12 +2,16 @@ version: '3'
 
 services:
   jenkins:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.Jenkins
     image: hometask-image-jenkins:latest
     ports:
-      - "8080:8080"
-  nexus:    
-    build: .
+      - "80:8080"
+  nexus:   
+    build:
+      context: .
+      dockerfile: Dockerfile.Nexus3
     image: hometask-image-nexus:latest
     ports:
-      - "8081:8081"
+      - "81:8081"
