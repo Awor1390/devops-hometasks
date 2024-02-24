@@ -1,0 +1,208 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>action of build</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@5.2.1">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>https://github.com/Awor1390/word-cloud-generator</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>*/master</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="empty-list"/>
+    <extensions/>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>echo { \&quot;version\&quot;: \&quot;1.DEVELOPMENT\&quot; }&gt;static/version
+
+#sed -i &quot;s/DEVELOPMENT/$BUILD_NUMBER/g&quot; static/version
+
+GOOS=linux GOARCH=amd64 go build -o /tmp/word-cloud-generator -v 
+
+md5sum /tmp/word-cloud-generator
+gzip -f /tmp/word-cloud-generator
+
+ls -l /tmp/</command>
+      <configuredLocalRules/>
+    </hudson.tasks.Shell>
+    <sp.sd.nexusartifactuploader.NexusArtifactUploader plugin="nexus-artifact-uploader@2.14">
+      <nexusVersion>nexus3</nexusVersion>
+      <protocol>http</protocol>
+      <nexusUrl>{{ nexus_ip }}</nexusUrl>
+      <groupId>1</groupId>
+      <version>$BUILD_NUMBER</version>
+      <repository>dev</repository>
+      <artifacts>
+        <sp.sd.nexusartifactuploader.Artifact>
+          <artifactId>word-cloud-generator</artifactId>
+          <type>gz</type>
+          <classifier></classifier>
+          <file>/tmp/word-cloud-generator.gz</file>
+        </sp.sd.nexusartifactuploader.Artifact>
+      </artifacts>
+      <credentialsId>08dc3a48-0fc1-411b-905f-e272bb07674e</credentialsId>
+    </sp.sd.nexusartifactuploader.NexusArtifactUploader>
+    <org.jvnet.hudson.plugins.SSHBuilder plugin="ssh@2.6.1">
+      <siteName>vagrant@{{ stage_ip }}:22</siteName>
+      <command>#!/bin/bash
+
+# Create the systemd service file
+echo &quot;[Unit]
+Description=Word Cloud Generator
+
+[Service]
+WorkingDirectory=/tmp
+ExecStart=/tmp/word-cloud-generator
+Restart=always
+
+[Install]
+WantedBy=multi-user.target&quot; | sudo tee /etc/systemd/system/wordcloud.service &gt; /dev/null
+
+# Check if creating service file was successful
+if [ $? -ne 0 ]; then
+    echo &quot;Failed to create systemd service file&quot;
+    exit 1
+fi
+
+# Reload systemd daemon
+sudo systemctl daemon-reload
+
+# Check if daemon reload was successful
+if [ $? -ne 0 ]; then
+    echo &quot;Failed to reload systemd daemon&quot;
+    exit 1
+fi
+
+# Restart the created service
+sudo service wordcloud restart
+
+# Download Word Cloud Generator binary
+sudo curl -X GET &quot;http://{{ nexus_ip }}/repository/dev/1/word-cloud-generator/$BUILD_NUMBER/word-cloud-generator-$BUILD_NUMBER.gz&quot; -o /tmp/word-cloud-generator.gz -u &quot;$NEXUS_USER:$NEXUS_PASS&quot;
+
+# List contents of /opt/wordcloud directory
+sudo ls -l /tmp
+
+# Decompress the downloaded binary file
+sudo gunzip -f /tmp/word-cloud-generator.gz
+
+# Grant execute permissions to the Word Cloud Generator binary
+sudo chmod +x /tmp/word-cloud-generator
+
+# Start the wordcloud service
+sudo service wordcloud start
+
+# Check if service start was successful
+if [ $? -ne 0 ]; then
+    echo &quot;Failed to start wordcloud service&quot;
+    exit 1
+fi
+
+echo &quot;Wordcloud service configured and started successfully&quot;
+</command>
+      <execEachLine>false</execEachLine>
+      <hideCommand>false</hideCommand>
+    </org.jvnet.hudson.plugins.SSHBuilder>
+    <hudson.tasks.Shell>
+      <command>res=`curl -s -H &quot;Content-Type: application/json&quot; -d &apos;{&quot;text&quot;:&quot;ths is a really really really important thing this is&quot;}&apos; http://{{ stage_ip }}:8888/version | jq &apos;. | length&apos;`
+if [ &quot;1&quot; != &quot;$res&quot; ]; then
+  exit 99
+fi
+
+res=`curl -s -H &quot;Content-Type: application/json&quot; -d &apos;{&quot;text&quot;:&quot;ths is a really really really important thing this is&quot;}&apos; http://{{ stage_ip }}:8888/api | jq &apos;. | length&apos;`
+if [ &quot;7&quot; != &quot;$res&quot; ]; then
+  exit 99
+fi</command>
+      <configuredLocalRules/>
+    </hudson.tasks.Shell>
+    <org.jvnet.hudson.plugins.SSHBuilder plugin="ssh@2.6.1">
+      <siteName>vagrant@{{ prod_ip }}:22</siteName>
+      <command>#!/bin/bash
+
+# Create the systemd service file
+echo &quot;[Unit]
+Description=Word Cloud Generator
+
+[Service]
+WorkingDirectory=/tmp
+ExecStart=/tmp/word-cloud-generator
+Restart=always
+
+[Install]
+WantedBy=multi-user.target&quot; | sudo tee /etc/systemd/system/wordcloud.service &gt; /dev/null
+
+# Check if creating service file was successful
+if [ $? -ne 0 ]; then
+    echo &quot;Failed to create systemd service file&quot;
+    exit 1
+fi
+
+# Reload systemd daemon
+sudo systemctl daemon-reload
+
+# Check if daemon reload was successful
+if [ $? -ne 0 ]; then
+    echo &quot;Failed to reload systemd daemon&quot;
+    exit 1
+fi
+
+# Restart the created service
+sudo service wordcloud restart
+
+# Download Word Cloud Generator binary
+sudo curl -X GET &quot;http://{{ nexus_ip }}/repository/dev/1/word-cloud-generator/$BUILD_NUMBER/word-cloud-generator-$BUILD_NUMBER.gz&quot; -o /tmp/word-cloud-generator.gz -u &quot;$NEXUS_USER:$NEXUS_PASS&quot;
+
+# List contents of /opt/wordcloud directory
+sudo ls -l /tmp
+
+# Decompress the downloaded binary file
+sudo gunzip -f /tmp/word-cloud-generator.gz
+
+# Grant execute permissions to the Word Cloud Generator binary
+sudo chmod +x /tmp/word-cloud-generator
+
+# Start the wordcloud service
+sudo service wordcloud start
+
+# Check if service start was successful
+if [ $? -ne 0 ]; then
+    echo &quot;Failed to start wordcloud service&quot;
+    exit 1
+fi
+
+echo &quot;Wordcloud service configured and started successfully&quot;</command>
+      <execEachLine>false</execEachLine>
+      <hideCommand>false</hideCommand>
+    </org.jvnet.hudson.plugins.SSHBuilder>
+  </builders>
+  <publishers/>
+  <buildWrappers>
+    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@657.v2b_19db_7d6e6d">
+      <bindings>
+        <org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
+          <credentialsId>08dc3a48-0fc1-411b-905f-e272bb07674e</credentialsId>
+          <usernameVariable>NEXUS_USER</usernameVariable>
+          <passwordVariable>NEXUS_PASS</passwordVariable>
+        </org.jenkinsci.plugins.credentialsbinding.impl.UsernamePasswordMultiBinding>
+      </bindings>
+    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
+    <hudson.plugins.timestamper.TimestamperBuildWrapper plugin="timestamper@1.26"/>
+    <org.jenkinsci.plugins.golang.GolangBuildWrapper plugin="golang@1.4">
+      <goVersion>Go_1.16</goVersion>
+    </org.jenkinsci.plugins.golang.GolangBuildWrapper>
+  </buildWrappers>
+</project>

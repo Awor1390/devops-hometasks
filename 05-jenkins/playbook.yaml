@@ -1,0 +1,112 @@
+---
+#Playbook 1
+- name: Jenkins playbook
+  hosts: jenkins
+  gather_facts: no
+  become: yes
+
+  tasks:
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
+
+    - name: Install packages
+      apt:
+        pkg:
+        - build-essential 
+        - default-jre 
+        - jq
+        - sshpass
+        state: present
+
+    - name: Add Jenkins repository key
+      ansible.builtin.shell: 
+        cmd: "curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null"
+
+    - name: Add Jenkins repository to apt sources
+      ansible.builtin.shell: 
+        cmd: "echo 'deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/' | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null"
+
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
+
+    - name: Install packages
+      apt:
+        pkg:
+        - jenkins
+        state: present
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reexec: yes
+      become: yes
+
+    - name: Restart Jenkins service
+      systemd:
+        name: jenkins
+        state: restarted
+      become: yes
+
+    - name: Modify JAVA_OPTS in jenkins.service
+      replace:
+        path: /lib/systemd/system/jenkins.service
+        regexp: '^Environment="JAVA_OPTS=-Djava.awt.headless=true"'
+        replace: 'Environment="JAVA_OPTS=-Djava.awt.headless=true -Dcasc.jenkins.config=${JENKINS_HOME}/casc_configs -Djenkins.install.runSetupWizard=false"'
+
+    - name: Update TimeoutStartSec in jenkins.service
+      replace:
+        path: /lib/systemd/system/jenkins.service
+        regexp: '^#TimeoutStartSec=90'
+        replace: 'TimeoutStartSec=300'
+
+    - name: Create dir
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: "{{ item.state }}"
+        group: jenkins
+        owner: jenkins
+        mode: '0755'
+      loop:
+      - { path: '/var/lib/jenkins/init.groovy.d' , state: 'directory'}    
+      - { path: '/var/lib/jenkins/casc_configs' , state: 'directory'}   
+      - { path: '/var/lib/jenkins/jobs/action' , state: 'directory'}   
+
+    - name: Template variables file
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      vars:
+        jenkins_ip: "{{ enkins_ip }}"
+        nexus_ip: "{{ nexus_ip }}"
+        stage_ip: "{{ stage_ip }}"
+        prod_ip: "{{ prod_ip }}"
+      loop:
+      - { src: '/vagrant/jenkins.yml.j2' , dest: '/tmp/jenkins.yml'}
+      - { src: '/vagrant/config.xml.j2' , dest: '/tmp/config.xml'}   
+      - { src: '/vagrant/org.jvnet.hudson.plugins.SSHBuildWrapper.xml.j2' , dest: '/tmp/org.jvnet.hudson.plugins.SSHBuildWrapper.xml'}   
+
+    - name: Copy files
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: jenkins
+        group: jenkins
+        mode: '0644'
+      loop:
+      - { src: '/vagrant/scripts/01-admin-user.groovy', dest: '/var/lib/jenkins/init.groovy.d/01-admin-user.groovy' }
+      - { src: '/vagrant/scripts/02_plugins.groovy', dest: '/var/lib/jenkins/init.groovy.d/02_plugins.groovy' }
+      - { src: '/tmp/jenkins.yml', dest: '/var/lib/jenkins/casc_configs/jenkins.yml' }
+      - { src: '/tmp/config.xml', dest: '/var/lib/jenkins/jobs/action/config.xml' }
+      - { src: '/tmp/org.jvnet.hudson.plugins.SSHBuildWrapper.xml', dest: '/var/lib/jenkins/org.jvnet.hudson.plugins.SSHBuildWrapper.xml' }
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reexec: yes
+      become: yes
+
+    - name: Restart Jenkins service
+      systemd:
+        name: jenkins
+        state: restarted
+      become: yes

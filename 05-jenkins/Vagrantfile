@@ -1,0 +1,63 @@
+Vagrant.configure("2") do |config|
+
+    STAGE_IP = "192.168.59.80"
+    PRODUCTION_IP = "192.168.59.85"
+    NEXUS_IP = "192.168.59.90" 
+    JENKINS_IP = "192.168.56.65" 
+
+    NEXUS_IP_PORT = "8081"
+    JENKINS_IP_PORT = "8080"
+
+    config.vm.synced_folder  ".", "/vagrant", disabled: false   
+    config.vm.box = "generic/debian11"
+    
+    # Jenkins VM config
+    config.vm.define "jenkins" do |jenkins|
+        jenkins.vm.network "private_network", ip: JENKINS_IP
+        
+        jenkins.vm.provider "virtualbox" do |vb|
+            vb.memory = 1200
+            vb.cpus   = 2
+        end
+
+        jenkins.vm.provision :ansible_local do |ans|
+            ans.playbook = "playbook.yaml"
+            ans.extra_vars = {
+                "nexus_ip" => "#{NEXUS_IP}:#{NEXUS_IP_PORT}",
+                "jenkins_ip" => "#{JENKINS_IP}:#{JENKINS_IP_PORT}",
+                "stage_ip" => STAGE_IP,
+                "prod_ip" => PRODUCTION_IP
+            }
+        end   
+    end
+
+    # Nexus VM config
+    config.vm.define "nexus" do |nexus|
+        nexus.vm.provider("virtualbox"){ |vb| vb.memory = 2048 }
+        nexus.vm.network "private_network", ip: NEXUS_IP
+        nexus.vm.network "forwarded_port", guest: 8081, host: 8091
+    
+        nexus.vm.provision :ansible_local do |ans|
+            ans.playbook = "nexus.yaml"
+        end
+    end
+
+    # Staging VM config
+    config.vm.define "staging" do |host|
+        host.vm.network "private_network", ip: STAGE_IP
+        host.vm.provider("virtualbox"){ |vb| vb.memory = 256 }
+    end
+
+    # Production VM config
+    config.vm.define "production" do |host|
+        host.vm.network "private_network", ip: PRODUCTION_IP
+        host.vm.provider("virtualbox"){ |vb| vb.memory = 256 }
+    end
+
+    # Global ssh auth disable
+    config.vm.provision "shell", inline: <<-SHELL
+        sed -i "s/^PasswordAuthentication no\$/PasswordAuthentication yes/g" /etc/ssh/sshd_config
+        service sshd restart
+        echo -e "vagrant\nvagrant" | passwd vagrant
+    SHELL
+end

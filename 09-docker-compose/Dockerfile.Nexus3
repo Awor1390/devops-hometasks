@@ -1,0 +1,16 @@
+FROM debian
+
+LABEL maintainer="pwd1390@mail.ru"
+
+USER root
+
+ADD ./roles /tmp
+
+ADD ./files/nexus.yaml /tmp/nexus.yaml
+
+RUN apt-get update && apt-get install -y ansible gnupg2 rsync && apt clean 
+
+ADD ./files/run.sh /usr/local/bin/run.sh
+RUN chmod +x /usr/local/bin/run.sh
+
+ENTRYPOINT [ "/usr/local/bin/run.sh" ]

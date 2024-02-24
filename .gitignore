@@ -1,3 +1,5 @@
 **/.vagrant
 .vagrant
 **/var
+05-jenkins/service.sh
+08-jenkinsfile/service.sh
