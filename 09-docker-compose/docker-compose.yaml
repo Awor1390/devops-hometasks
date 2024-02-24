@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  jenkins:
+    build: .
+    image: hometask-image-jenkins:latest
+    ports:
+      - "8080:8080"
+  nexus:    
+    build: .
+    image: hometask-image-nexus:latest
+    ports:
+      - "8081:8081"

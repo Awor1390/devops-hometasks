@@ -5,7 +5,7 @@ pipeline {
     }
     environment {
         wcg="word-cloud-generator"
-        NEXUS_IP="localhost"
+        NEXUS_IP="nexus"
         GIT="https://github.com/Awor1390/$wcg"
     }
     stages{
@@ -65,7 +65,7 @@ pipeline {
                         ]
                     ], 
                     credentialsId: 'nexus-creds', 
-                    groupId: '', 
+                    groupId: '1', 
                     nexusUrl: "$NEXUS_IP:8081", 
                     nexusVersion: 'nexus3', 
                     protocol: 'http', 
