@@ -3,11 +3,36 @@ FROM jenkins/jenkins:latest
 LABEL maintainer="pwd1390@mail.ru"
 
 USER root
+# RUN chown -R jenkins:jenkins /var/jenkins_home
 
-ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false -Dcasc.jenkins.config=/var/jenkins_home"
 
 RUN jenkins-plugin-cli \
     --plugins \
-    git 
+    git \
+    timestamper \
+    credentials \
+    credentials-binding \
+    workflow-basic-steps \
+    workflow-cps \
+    workflow-multibranch \
+    pipeline-build-step \
+    pipeline-input-step \ 
+    pipeline-milestone-step \
+    pipeline-stage-step \
+    pipeline-model-definition \
+    configuration-as-code \
+    golang \
+    nexus-artifact-uploader \
+    ssh \
+    ws-cleanup
 
-# RUN /usr/local/bin/install-plugins.sh git
+RUN apt-get update && apt-get install -y build-essential && apt clean
+
+RUN mkdir -p /var/jenkins_home/jobs/action && chmod -R 755 /var/jenkins_home/jobs/action
+
+ADD ./files/config.xml /var/jenkins_home/jobs/action/config.xml
+
+ADD ./files/init.groovy /var/jenkins_home/init.groovy
+
+ADD ./files/jenkins.yml /var/jenkins_home/jenkins.yml
