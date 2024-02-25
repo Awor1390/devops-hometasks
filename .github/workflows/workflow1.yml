@@ -1,9 +1,9 @@
 name: Task10_github_actions
 
 on:
-  push:
-    branches:
-      - master
+#   push:
+#     branches:
+#       - master
   workflow_dispatch: 
 
 jobs:
@@ -29,19 +29,19 @@ jobs:
           docker push ghcr.io/${{ github.repository_owner }}/${{ github.repository_name }}:latest
 
 
-          on:
-            push:
-              branches: [ "master" ]
-            pull_request:
-              branches: [ "master" ]
+        #   on:
+        #     push:
+        #       branches: [ "master" ]
+        #     pull_request:
+        #       branches: [ "master" ]
           
-          jobs:
+        #   jobs:
           
-            build:
+        #     build:
           
-              runs-on: ubuntu-latest
+        #       runs-on: ubuntu-latest
           
-              steps:
-              - uses: actions/checkout@v3
-              - name: Build the Docker image
-                run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+        #       steps:
+        #       - uses: actions/checkout@v3
+        #       - name: Build the Docker image
+        #         run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
