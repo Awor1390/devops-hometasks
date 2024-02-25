@@ -23,7 +23,10 @@ jobs:
         run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
 
       - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+        run: |
+          docker login ghcr.io -u $ --password-stdin
+
+          echo "🍏Login SUCCESSFULL🍏"
         
       - name: Push image
         run: |
@@ -36,3 +39,9 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
 
           docker push $IMAGE_ID:$VERSION
+
+          echo "🍏🍏 🍏  🍏 🍏🍏"
+          echo "🍏   🍏* 🍏 🍏 🍏"
+          echo "🍏🍏 🍏 *🍏 🍏  🍏"
+          echo "🍏   🍏  🍏 🍏 🍏"
+          echo "🍏🍏 🍏  🍏 🍏🍏"
