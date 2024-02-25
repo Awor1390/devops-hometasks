@@ -23,10 +23,7 @@ jobs:
         run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
 
       - name: Log in to registry
-        run: |
-          docker login ghcr.io -u $ --password-stdin
-
-          echo "🍏Login SUCCESSFULL🍏"
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
         
       - name: Push image
         run: |
