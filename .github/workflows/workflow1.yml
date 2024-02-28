@@ -5,7 +5,7 @@ on:
 
 env:
   IMAGE_NAME: wcg
-  VERSION: ${{ github.run_number }}
+  VERSION: ${{ github.sha }} 
   DOCKER_DIR: 07-docker
   DOCKER_SRC: Dockerfile.multi
 
@@ -34,8 +34,10 @@ jobs:
           echo 🍏$IMAGE_ID:$VERSION🍏
 
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:latest
 
           docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:latest
 
           echo "🍏🍏 🍏  🍏 🍏🍏"
           echo "🍏   🍏* 🍏 🍏 🍏"
