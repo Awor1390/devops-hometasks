@@ -9,3 +9,6 @@ This repo created by pwd1390
         uses: ASzc/change-string-case-action@v6
         with:
           string: ${{ github.repository_owner }}
+
+
+minikube ip
