@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wcg-deployment
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+      - name: wcg-container
+        image: {{ .Values.container.repository }}{{ .Values.container.image}}:{{ .Values.container.version }}
+        ports:
+        - containerPort: {{ .Values.container.port }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wcg-service
+spec:
+  type: ClusterIP
+  selector:
+    app: app
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: {{ .Values.service.port }}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wcg-ingress
+  namespace: default
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: my-wcg
+    meta.helm.sh/release-namespace: default
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: {{ .Values.ingress.hostName }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: wcg-service
+                port:
+                  number: {{ .Values.ingress.hostPort }}

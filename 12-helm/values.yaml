@@ -1,0 +1,21 @@
+replicas: 1
+
+deployment:
+  name: wcg-deployment
+  containerPort: 8888
+
+service:
+  name: wcg-service
+  port: 8888
+  targetPort: 8888
+
+container:
+  name: wcg-image
+  repository: ghcr.io/awor1390/
+  image: wcg
+  version: latest
+  port: 8888
+
+ingress:
+  hostName: word-cloud-generator.com
+  hostPort: 8888
