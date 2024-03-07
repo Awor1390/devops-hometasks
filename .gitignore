@@ -5,7 +5,4 @@
 08-jenkinsfile/service.sh
 **/.terraform
 terraform.tfstate
-*.hcl
-*.backup
-*.tfstate
-*.tfstate.backup
+13-terraform/*
