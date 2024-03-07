@@ -1,5 +1,5 @@
 resource "github_repository_file" "devops-hometasks" {
-  repository          = "devops-hometasks/13-terraform"
+  repository          = "devops-hometasks"
   branch              = "master"
   file                = "terraform.tfstate"
   content             = file("terraform.tfstate")
