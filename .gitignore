@@ -6,3 +6,6 @@
 **/.terraform
 terraform.tfstate
 *.hcl
+*.backup
+*.tfstate
+*.tfstate.backup

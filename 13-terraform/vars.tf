@@ -17,6 +17,23 @@ variable "container" {
   }
 }
 
+variable "git" {
+  type = map(object({
+    repository    = string
+    branch        = string
+    commit_author = string
+    commit_email  = string
+  }))
+  default = {
+    Awor = {
+      repository    = "devops-hometasks"
+      branch        = "master"
+      commit_author = "Awor"
+      commit_email  = "pwd1390@mail.ru"
+    }
+  }
+}
+
 variable "service" {
   type = map(object({
     name = string
