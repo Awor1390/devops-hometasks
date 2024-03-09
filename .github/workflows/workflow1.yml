@@ -28,9 +28,9 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: "${TAG}"
-          replace: "0.$TAG_NUM.0"
+          replace: "0.8.0"
           regex: false
-          include: "./$HELM_LOCAL/values.yaml"
+          include: "values.yaml"
 
       # Check helm charts
       - name: Lint & Update & Pack Helm Chart
