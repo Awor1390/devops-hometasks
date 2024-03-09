@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Add the step to create a new tag version
+      # Add the step to create a new tag version1
 
       - name: Build image
         run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
