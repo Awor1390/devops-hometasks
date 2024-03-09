@@ -27,9 +27,9 @@ jobs:
       - name: Update version of image in charts
         uses: jacobtomlinson/gha-find-replace@v3
         with:
-          find: "  version: .*"
-          replace: "  version: 0.$TAG_NUM.0"
-          regex: true
+          find: "${TAG}"
+          replace: "0.$TAG_NUM.0"
+          regex: false
           include: "./$HELM_LOCAL/values.yaml"
 
       # Check helm charts
