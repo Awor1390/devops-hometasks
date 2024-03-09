@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-      contents: read
-      
+      contents: write 
+      pages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
 
-      # Add the step to create a new tag version1
+      # Add the step to create a new tag version
 
       - name: Build image
         run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
