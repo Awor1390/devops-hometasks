@@ -46,6 +46,10 @@ jobs:
       - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
 
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tags
+
       # Check helm charts
       - name: Lint & Update & Pack Helm Chart
         run: |
