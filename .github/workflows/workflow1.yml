@@ -48,9 +48,8 @@ jobs:
       - name: Lint & Update & Pack Helm Chart
         run: |
           helm lint $HELM_LOCAL/ 
-          helm repo index $HELM_LOCAL/
-          cp ./12-helm/index.yaml ./docs/index.yaml
-          helm package -d ./docs $HELM_LOCAL/  
+          helm package -d ./docs/ $HELM_LOCAL/
+          helm repo index ./docs  
           ls ./docs
 
       - name: Push changes
