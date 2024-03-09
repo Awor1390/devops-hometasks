@@ -22,15 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Find and Replace
-        uses: jacobtomlinson/gha-find-replace@v3
-        with:
-          find: "_TAG_"
-          replace: "0.${{ github.run_number }}.0"
-          regex: false
-          include: "**values.yaml"
-      - name: Push changes
-        uses: stefanzweifel/git-auto-commit-action@v4
+
 
       # Check helm charts
       - name: Lint & Update & Pack Helm Chart
@@ -46,7 +38,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false
-          MINOR_STRING_TOKEN: ${{ github.run_number }}
 
       # Docker build
       - name: Build image
@@ -72,6 +63,15 @@ jobs:
           docker push $IMAGE_ID:latest
           docker push $IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}      
     
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: "    version: .*"
+          replace: "    version: ${{ steps.tag_version.outputs.new_tag }}"
+          regex: false
+          include: "**values.yaml"
+      - name: Push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
 
 
       # - name: Deploy to GitHub Pages
