@@ -46,6 +46,11 @@ jobs:
       - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
 
+      - uses: actions/checkout@v4
+        with:
+          ref: master 
+          fetch-depth: 0
+    
       # Check helm charts
       - name: Lint & Update & Pack Helm Chart
         run: |
