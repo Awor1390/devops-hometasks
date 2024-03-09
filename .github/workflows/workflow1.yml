@@ -29,6 +29,7 @@ jobs:
           find: "_TAG_"
           replace: "0.$TAG_NUM.0"
           regex: false
+          include: "**values.yaml"
       - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
 
