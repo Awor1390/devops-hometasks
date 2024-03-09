@@ -1,8 +1,5 @@
 name: Task10_github_actions
 
-# on:
-#   workflow_dispatch: 
-
 on:
   push:
     branches:
@@ -25,25 +22,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # - name: Build image
-      #   run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
+      # Add the step to create a new tag version
+      - name: Create a new tag version
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Log in to registry
-      #   run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+      - name: Build image
+        run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
+
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
         
-      # - name: Push image
-      #   run: |
-      #     IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+      - name: Push image
+        run: |
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
 
-      #     IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
-      #     echo 🍏$IMAGE_ID:$VERSION🍏
+          echo 🍏$IMAGE_ID:$VERSION🍏
 
-      #     docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-      #     docker tag $IMAGE_NAME $IMAGE_ID:latest
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:latest
 
-      #     docker push $IMAGE_ID:$VERSION
-      #     docker push $IMAGE_ID:latest
+          docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:latest
 
 
       - name: Lint Helm Chart
@@ -54,30 +58,3 @@ jobs:
 
       - name: Update Helm Chart repo index
         run: helm repo index ./$HELM_LOCAL
-
-        # githubtag:
-        #   runs-on: ubuntu-22.04
-        #   steps:
-        #     - uses: actions/checkout@v4
-        #     - name: adding branch tag
-        #       uses: mathieudutour/github-tag-action@v6.1
-        #       with:
-        #         github_token: ${{ env.ACTION_TOKEN }}
-            
-        #         - name: create tag
-        #       uses: rickstaa/action-create-tag@v1
-        #       id: tag_add
-        #       with:
-        #         tag: v${{ env.GITHUB_TAG }}
-
-      - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.1
-        with:
-           github_token: ${{ secrets.GITHUB_TOKEN }}
-      # - name: Create a GitHub release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     tag: ${{ steps.tag_version.outputs.new_tag }}
-      #     name: Release ${{ steps.tag_version.outputs.new_tag }}
-      #     body: ${{ steps.tag_version.outputs.changelog }}
