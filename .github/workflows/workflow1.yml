@@ -11,6 +11,7 @@ env:
   DOCKER_DIR: 07-docker
   DOCKER_SRC: Dockerfile.multi
   HELM_LOCAL: 12-helm
+  TAG_NUM: ${{ github.run_number }}
 
 jobs:
   push:
@@ -22,12 +23,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # get increment of github TAG
-      - uses: action-pack/increment@v2
-        id: tag_counter
+      # update docker image tag in Charts' values.yaml
+      - name: Update version of image in charts
+        uses: jacobtomlinson/gha-find-replace@v3
         with:
-          name: 'TAG_COUNTER'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          find: "  version: .*"
+          replace: "  version: 0.$TAG_NUM.0"
+          regex: true
+          include: "./$HELM_LOCAL/values.yaml"
 
       # Check helm charts
       - name: Lint & Update & Pack Helm Chart
@@ -36,15 +39,6 @@ jobs:
           helm repo index ./$HELM_LOCAL
           helm package ./$HELM_LOCAL      
       
-      # update docker image tag in Charts' values.yaml
-      - name: Update version of image in charts
-        uses: jacobtomlinson/gha-find-replace@v3
-        with:
-          find: "  version: .*"
-          replace: "  version: ${{ steps.tag_counter.outputs.TAG_COUNTER }}"
-          regex: true
-          include: "./$HELM_LOCAL/values.yaml"
-
       # Push new TAG
       - name: Bump version and push tag
         id: tag_version
@@ -52,7 +46,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false
-          MINOR_STRING_TOKEN: ${{ steps.tag_counter.outputs.TAG_COUNTER }}
+          MINOR_STRING_TOKEN: $TAG_NUM
 
       # Docker build
       - name: Build image
