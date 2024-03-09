@@ -60,7 +60,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false
-          MINOR_STRING_TOKEN: ${{ github.run_number }}
+          CUSTOM_TAG: ${{ steps.semvers.outputs.patch }}
 
       # Docker build
       - name: Build image
@@ -76,15 +76,15 @@ jobs:
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
           echo 🍏$IMAGE_ID:$VERSION🍏
-          echo 🍏$IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}🍏
+          echo 🍏$IMAGE_ID:${{ steps.semvers.outputs.patch }}🍏
 
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker tag $IMAGE_NAME $IMAGE_ID:latest
-          docker tag $IMAGE_NAME $IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}
+          docker tag $IMAGE_NAME $IMAGE_ID:${{ steps.semvers.outputs.patch }}
 
           docker push $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:latest
-          docker push $IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}      
+          docker push $IMAGE_ID:${{ steps.semvers.outputs.patch }}      
     
 
 
