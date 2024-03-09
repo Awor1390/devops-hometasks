@@ -50,7 +50,7 @@ jobs:
           helm lint $HELM_LOCAL/ 
           helm repo index $HELM_LOCAL/
           helm package -d ./docs $HELM_LOCAL/  
-          git add *
+          ls ./docs
 
       - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
