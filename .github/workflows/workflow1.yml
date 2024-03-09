@@ -11,7 +11,6 @@ env:
   DOCKER_DIR: 07-docker
   DOCKER_SRC: Dockerfile.multi
   HELM_LOCAL: 12-helm
-  TAG_NUM: ${{ github.run_number }}
 
 jobs:
   push:
@@ -27,7 +26,7 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: "_TAG_"
-          replace: "0.$TAG_NUM.0"
+          replace: "0.${{ github.run_number }}.0"
           regex: false
           include: "**values.yaml"
       - name: Push changes
@@ -36,7 +35,6 @@ jobs:
       # Check helm charts
       - name: Lint & Update & Pack Helm Chart
         run: |
-          sed -i "s/TAG/0.$TAG_NUM.0/g" ./12-helm/values.yaml
           helm lint ./$HELM_LOCAL
           helm repo index ./$HELM_LOCAL
           helm package ./$HELM_LOCAL      
@@ -48,7 +46,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false
-          MINOR_STRING_TOKEN: $TAG_NUM
+          MINOR_STRING_TOKEN: ${{ github.run_number }}
 
       # Docker build
       - name: Build image
