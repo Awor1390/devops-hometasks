@@ -55,8 +55,8 @@ jobs:
       - name: Lint & Update & Pack Helm Chart
         run: |
           helm lint $HELM_LOCAL/ 
-          helm repo index -d ./$HELM_LOCAL/
-          helm package -d ./docs ./$HELM_LOCAL/      
+          helm repo index $HELM_LOCAL/
+          helm package -d ./docs $HELM_LOCAL/      
       
       - name: Deploy to GitHub Page
         uses: peaceiris/actions-gh-pages@v3
