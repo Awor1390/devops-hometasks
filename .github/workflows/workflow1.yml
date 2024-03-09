@@ -68,7 +68,7 @@ jobs:
         with:
           find: "    version: .*"
           replace: "    version: ${{ steps.tag_version.outputs.new_tag }}"
-          regex: false
+          regex: true
           include: "**values.yaml"
       - name: Push changes
         uses: stefanzweifel/git-auto-commit-action@v4
