@@ -45,7 +45,7 @@ jobs:
           include: "**values.yaml"
 
       # Check helm charts
-      - name: Lint & Update & Pack Helm Chart
+      - name: Lint & Update & Pack Helm Chart & ls
         run: |
           helm lint $HELM_LOCAL/ 
           helm package -d ./docs/ $HELM_LOCAL/
