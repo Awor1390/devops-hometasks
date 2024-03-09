@@ -53,3 +53,9 @@ jobs:
 
       - name: Lint Helm Chart
         run: helm lint ./$HELM_LOCAL
+
+      - name: Pack Helm Chart
+        run: helm package ./$HELM_LOCAL      
+
+      - name: Update Helm Chart index
+        run: helm repo index ./$HELM_LOCAL
