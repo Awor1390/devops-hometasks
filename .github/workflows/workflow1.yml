@@ -1,7 +1,12 @@
 name: Task10_github_actions
 
+# on:
+#   workflow_dispatch: 
+
 on:
-  workflow_dispatch: 
+  push:
+    branches:
+      - master
 
 env:
   IMAGE_NAME: wcg
@@ -42,3 +47,9 @@ jobs:
 
       - name: Check Helm version
         run: helm version
+
+      - name: Check pwd
+        run: pwd
+
+      - name: Lint Helm Chart
+        run: helm lint ./$HELM_LOCAL
