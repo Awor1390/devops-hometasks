@@ -22,20 +22,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Add the step to create a new tag version
+      # get increment of github TAG
+      - uses: action-pack/increment@v2
+        id: tag_counter
+        with:
+          name: 'TAG_COUNTER'
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build image
-        run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
+      # Check helm charts
+      - name: Lint & Update & Pack Helm Chart
+        run: |
+          helm lint ./$HELM_LOCAL
+          helm repo index ./$HELM_LOCAL
+          helm package ./$HELM_LOCAL      
+      
+      # update docker image tag in Charts' values.yaml
+      - name: Update version of image in charts
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: "  version: .*"
+          replace: "  version: ${{ steps.tag_counter.outputs.TAG_COUNTER }}"
+          regex: true
+          include: "./$HELM_LOCAL/values.yaml"
 
-      - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-
+      # Push new TAG
       - name: Bump version and push tag
         id: tag_version
         uses: anothrNick/github-tag-action@1.64.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false
+          MINOR_STRING_TOKEN: ${{ steps.tag_counter.outputs.TAG_COUNTER }}
+
+      # Docker build
+      - name: Build image
+        run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
+
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
         
       - name: Push image
         run: |
@@ -52,23 +76,12 @@ jobs:
 
           docker push $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:latest
-          docker push $IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}
+          docker push $IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}      
+    
 
-      - name: Find and Replace
-        uses: jacobtomlinson/gha-find-replace@v3
-        with:
-          find: "  version: .*"
-          replace: "  version: ${{ steps.tag_version.outputs.new_tag }}"
-          regex: true
-          include: "./$HELM_LOCAL/values.yaml"
-      # - name: Push changes
-      #   uses: stefanzweifel/git-auto-commit-action@v4
 
-      - name: Lint Helm Chart
-        run: helm lint ./$HELM_LOCAL
-
-      - name: Pack Helm Chart
-        run: helm package ./$HELM_LOCAL      
-
-      - name: Update Helm Chart repo index
-        run: helm repo index ./$HELM_LOCAL
+      # - name: Deploy to GitHub Pages
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./
