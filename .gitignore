@@ -6,3 +6,4 @@
 **/.terraform
 terraform.tfstate
 13-terraform/*
+wcg-0.0.1.tgz
