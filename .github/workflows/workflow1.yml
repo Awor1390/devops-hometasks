@@ -8,6 +8,7 @@ env:
   VERSION: ${{ github.sha }} 
   DOCKER_DIR: 07-docker
   DOCKER_SRC: Dockerfile.multi
+  HELM_LOCAL: 12-helm
 
 jobs:
   push:
@@ -39,8 +40,5 @@ jobs:
           docker push $IMAGE_ID:$VERSION
           docker push $IMAGE_ID:latest
 
-          echo "🍏🍏 🍏  🍏 🍏🍏"
-          echo "🍏   🍏* 🍏 🍏 🍏"
-          echo "🍏🍏 🍏 *🍏 🍏  🍏"
-          echo "🍏   🍏  🍏 🍏 🍏"
-          echo "🍏🍏 🍏  🍏 🍏🍏"
+      - name: Lint Helm Chart
+        run: helm lint ./$HELM_LOCAL
