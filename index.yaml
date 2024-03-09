@@ -3,12 +3,12 @@ entries:
   wcg:
   - apiVersion: v2
     appVersion: "1.0"
-    created: "2024-03-09T23:22:22.678907156Z"
+    created: "2024-03-09T23:41:44.019938939Z"
     description: A Helm chart for Kubernetes
-    digest: 6212ff95b4fce581e97041c669ad9f0fe5846f3551f2c68f250714ffda09c1b9
+    digest: 0e598d0b04633a6c74d2879d13cbf28e68dffea6ab4823101b2e8080651ba26a
     name: wcg
     type: application
     urls:
     - wcg-0.0.1.tgz
     version: 0.0.1
-generated: "2024-03-09T23:22:22.678611949Z"
+generated: "2024-03-09T23:41:44.019626992Z"
