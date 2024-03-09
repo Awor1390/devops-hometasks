@@ -54,15 +54,15 @@ jobs:
       # Check helm charts
       - name: Lint & Update & Pack Helm Chart
         run: |
-          helm lint ./$HELM_LOCAL
-          helm repo index ./$HELM_LOCAL
-          helm package ./$HELM_LOCAL      
+          helm lint $HELM_LOCAL/ 
+          helm repo index -d ./docs ./$HELM_LOCAL/
+          helm package -d ./docs ./$HELM_LOCAL/      
       
       - name: Deploy to GitHub Page
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./$HELM_LOCAL
+          publish_dir: ./docs
           keep_files: true
           commit_message: 'Deploy Helm chart to GitHub Pages'   
 
