@@ -39,22 +39,30 @@ jobs:
         
       - name: Push image
         run: |
-          # IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
 
-          # IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
-          # echo 🍏$IMAGE_ID:$VERSION🍏
-          # echo 🍏$IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}🍏
+          echo 🍏$IMAGE_ID:$VERSION🍏
+          echo 🍏$IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}🍏
 
-          # docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          # docker tag $IMAGE_NAME $IMAGE_ID:latest
-          # docker tag $IMAGE_NAME $IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}
+          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          docker tag $IMAGE_NAME $IMAGE_ID:latest
+          docker tag $IMAGE_NAME $IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}
 
-          # docker push $IMAGE_ID:$VERSION
-          # docker push $IMAGE_ID:latest
-          # docker push $IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}
+          docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:latest
+          docker push $IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}
 
-          sed -i "s/  version:.*/  version: ${{ steps.tag_version.outputs.new_tag }}/g" /12-helm/values.yaml
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: "  version: .*"
+          replace: "  version: ${{ steps.tag_version.outputs.new_tag }}"
+          regex: true
+          include: "./$HELM_LOCAL/values.yaml"
+      # - name: Push changes
+      #   uses: stefanzweifel/git-auto-commit-action@v4
 
       - name: Lint Helm Chart
         run: helm lint ./$HELM_LOCAL
