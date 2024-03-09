@@ -13,7 +13,7 @@ container:
   name: wcg-image
   repository: ghcr.io/awor1390/
   image: wcg
-  version: 0.15.8
+  version: 0.15.15
   port: 8888
 
 ingress:
