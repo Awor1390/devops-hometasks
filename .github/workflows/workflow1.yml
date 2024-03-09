@@ -31,39 +31,31 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
       - name: Bump version and push tag
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          release_branches: master
-          
-      - name: Create a GitHub release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
-          body: ${{ steps.tag_version.outputs.changelog }}
+        uses: anothrNick/github-tag-action@1.64.0 # Don't use @master or @v1 unless you're happy to test the latest version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # if you don't want to set write permissions use a PAT token
+          WITH_V: false
         
-      - name: Push image
-        run: |
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+      # - name: Push image
+      #   run: |
+      #     IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
 
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+      #     IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
-          echo 🍏$IMAGE_ID:$VERSION🍏
+      #     echo 🍏$IMAGE_ID:$VERSION🍏
 
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:latest
+      #     docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+      #     docker tag $IMAGE_NAME $IMAGE_ID:latest
 
-          docker push $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:latest
+      #     docker push $IMAGE_ID:$VERSION
+      #     docker push $IMAGE_ID:latest
 
 
-      - name: Lint Helm Chart
-        run: helm lint ./$HELM_LOCAL
+      # - name: Lint Helm Chart
+      #   run: helm lint ./$HELM_LOCAL
 
-      - name: Pack Helm Chart
-        run: helm package ./$HELM_LOCAL      
+      # - name: Pack Helm Chart
+      #   run: helm package ./$HELM_LOCAL      
 
-      - name: Update Helm Chart repo index
-        run: helm repo index ./$HELM_LOCAL
+      # - name: Update Helm Chart repo index
+      #   run: helm repo index ./$HELM_LOCAL
