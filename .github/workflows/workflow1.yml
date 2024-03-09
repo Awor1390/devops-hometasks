@@ -54,6 +54,14 @@ jobs:
           docker push $IMAGE_ID:latest
           docker push $IMAGE_ID:${{ steps.tag_version.outputs.new_tag }}
 
+      - name: Find and Replace
+        uses: jacobtomlinson/gha-find-replace@v3
+        with:
+          find: "version: .*"
+          replace: "version: ${{ steps.tag_version.outputs.new_tag }}"
+          regex: true
+      - name: Push changes
+        uses: stefanzweifel/git-auto-commit-action@v4
 
       - name: Lint Helm Chart
         run: helm lint ./$HELM_LOCAL
