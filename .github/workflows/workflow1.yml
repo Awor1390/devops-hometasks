@@ -20,25 +20,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build image
-        run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
+      # - name: Build image
+      #   run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
 
-      - name: Log in to registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+      # - name: Log in to registry
+      #   run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
         
-      - name: Push image
-        run: |
-          IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+      # - name: Push image
+      #   run: |
+      #     IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
 
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+      #     IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
 
-          echo 🍏$IMAGE_ID:$VERSION🍏
+      #     echo 🍏$IMAGE_ID:$VERSION🍏
 
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:latest
+      #     docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+      #     docker tag $IMAGE_NAME $IMAGE_ID:latest
 
-          docker push $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:latest
+      #     docker push $IMAGE_ID:$VERSION
+      #     docker push $IMAGE_ID:latest
 
-      - name: Lint Helm Chart
-        run: helm lint ./$HELM_LOCAL
+      - name: Check Helm version
+        run: helm version
