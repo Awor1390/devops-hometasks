@@ -23,17 +23,18 @@ jobs:
       - uses: actions/checkout@v4
 
       # Add the step to create a new tag version
-      # - name: Create a new tag version
-      #   id: tag_version
-      #   uses: mathieudutour/github-tag-action@v6.1
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build image
         run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
 
       - name: Log in to registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: Create a new tag version
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
         
       - name: Push image
         run: |
