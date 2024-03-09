@@ -50,7 +50,7 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Create a GitHub release
         uses: ncipollo/release-action@v1
         with:
@@ -67,17 +67,17 @@ jobs:
       - name: Update Helm Chart repo index
         run: helm repo index ./$HELM_LOCAL
 
-        githubtag:
-          runs-on: ubuntu-22.04
-          steps:
-            - uses: actions/checkout@v4
-            - name: adding branch tag
-              uses: mathieudutour/github-tag-action@v6.1
-              with:
-                github_token: ${{ env.ACTION_TOKEN }}
+        # githubtag:
+        #   runs-on: ubuntu-22.04
+        #   steps:
+        #     - uses: actions/checkout@v4
+        #     - name: adding branch tag
+        #       uses: mathieudutour/github-tag-action@v6.1
+        #       with:
+        #         github_token: ${{ env.ACTION_TOKEN }}
             
-                - name: create tag
-              uses: rickstaa/action-create-tag@v1
-              id: tag_add
-              with:
-                tag: v${{ env.GITHUB_TAG }}
+        #         - name: create tag
+        #       uses: rickstaa/action-create-tag@v1
+        #       id: tag_add
+        #       with:
+        #         tag: v${{ env.GITHUB_TAG }}
