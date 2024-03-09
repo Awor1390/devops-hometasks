@@ -23,18 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # update docker image tag in Charts' values.yaml
-      - name: Update version of image in charts
-        uses: jacobtomlinson/gha-find-replace@v3
-        with:
-          find: "${TAG}"
-          replace: "0.8.0"
-          regex: false
-          include: "values.yaml"
-
       # Check helm charts
       - name: Lint & Update & Pack Helm Chart
         run: |
+          sed -i "s/TAG/0.$TAG_NUM.0/g" ./12-helm/values.yaml
           helm lint ./$HELM_LOCAL
           helm repo index ./$HELM_LOCAL
           helm package ./$HELM_LOCAL      
