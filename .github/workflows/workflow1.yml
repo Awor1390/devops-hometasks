@@ -24,19 +24,19 @@ jobs:
         with:
           fetch-depth: 0 # Required due to the way Git works, without it this action won't be able to find any or the correct tags
       
-      - name: 'Get Previous tag'
+      - name: 'GITHUB TAG - Get previous tag'
         id: previoustag
         uses: "WyriHaximus/github-action-get-previous-tag@v1"
         with:
           fallback: 0.0.1 # Optional fallback tag to use when no tag can be found
           
-      - name: 'Get next minor version'
+      - name: 'GITHUB TAG - Get next minor tag version'
         id: semvers
         uses: "WyriHaximus/github-action-next-semvers@v1"
         with:
           version: ${{ steps.previoustag.outputs.tag }}
 
-      - name: Find and Replace
+      - name: Update wcg image tag version
         uses: jacobtomlinson/gha-find-replace@v3
         with:
           find: "  version: .*"
@@ -44,31 +44,21 @@ jobs:
           regex: true
           include: "**values.yaml"
 
-      # Check helm charts
-      - name: Lint & Update & Pack Helm Chart & ls
+      - name: Helm Lint, Update, Pack repository
         run: |
           helm lint $HELM_LOCAL/ 
           helm package -d ./docs/ $HELM_LOCAL/
           helm repo index ./docs  
           ls ./docs
 
-      - name: Push changes
+      - name: Commit changed Helm values and upload packed helm repository
         uses: stefanzweifel/git-auto-commit-action@v4
 
       - uses: actions/checkout@v4
         with:
           ref: master 
           fetch-depth: 0    
-      
-      - name: Deploy to GitHub Page
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-          keep_files: true
-          commit_message: 'Deploy Helm chart to GitHub Pages'   
 
-      # Push new TAG
       - name: Bump version and push tag
         id: tag_version
         uses: anothrNick/github-tag-action@1.64.0
@@ -77,7 +67,6 @@ jobs:
           WITH_V: false
           CUSTOM_TAG: ${{ steps.semvers.outputs.patch }}
 
-      # Docker build
       - name: Build image
         run: docker build ./$DOCKER_DIR --file ./$DOCKER_DIR/$DOCKER_SRC --tag $IMAGE_NAME --label "runnumber=$VERSION" --label "description=no money no honey" 
 

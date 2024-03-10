@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: wcg-helm-app
+  namespace: argocd # Specify the namespace where you want to deploy the ArgoCD application
+spec:
+  project: default # Specify the project where this application belongs
+  source:
+    repoURL: "https://awor1390.github.io/devops-hometasks/"
+    targetRevision: "0.0.1" # Specify the version of the Helm chart you want to use
+    chart: "wcg" # Specify the name of the Helm chart
+    helm:
+      valueFiles:
+        - values.yaml # Specify any values files you want to use
+  destination:
+    server: https://kubernetes.default.svc # Specify the Kubernetes API server
+    namespace: default # Specify the namespace where you want to deploy the Helm chart
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

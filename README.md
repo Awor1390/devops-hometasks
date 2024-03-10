@@ -12,3 +12,5 @@ This repo created by pwd1390
 
 
 minikube ip
+argocd admin initial-password -n argocd
+kubectl port-forward svc/argocd-server -n argocd 8080:443
